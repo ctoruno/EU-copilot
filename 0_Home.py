@@ -42,22 +42,30 @@ st.markdown("<h1 style='text-align: center;'>EU-S Copilot</h1>",
 st.markdown(
     """
     <p class='jtext'>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna 
-    aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
-    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur 
-    sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    The <strong style="color:#003249">EU-S Copilot</strong> is a web app designed to assist Data Analysts 
+    in their data-cleaning, harmonizing, and validation tasks for data collected from public opinion polls 
+    and expert-coded questionnaires.
     </p>
     
     <p class='jtext'>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna 
-    aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
-    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur 
-    sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    In the <strong style="color:#003249">GPP Tools tab</strong>, you'll discover a versatile toolkit that's 
+    your trusty sidekick for tackling common challenges when cleaning public opinion poll data.
     </p>
 
     <p class='jtext'>
-    If you have questions, suggestions or you want to report a bug, make sure of checking the 
-    <strong style="color:#003249">Info Tab</strong> in the left side bar panel.
+    Switch over to the <strong style="color:#003249">QRQ Tools tab</strong>, and you'll encounter a separate 
+    toolbox packed with automatic estimations to make your life easier when dealing with expert-coded data.
+    </p>
+
+    <p class='jtext'>
+    Check out the <strong style="color:#003249">Codebooks tab</strong> for an interactive tool that helps 
+    you easily access essential dataset information related to variables in the most recent EU GPP and 
+    QRQ questionnaires.
+    </p>
+
+    <p class='jtext'>
+    If you're curious for more details about the app or if you have questions, suggestions or you want to report 
+    a bug,  hop on over to the <strong style="color:#003249">Info tab</strong> in the left side bar panel.
     </p>
 
     <p class='jtext'>
