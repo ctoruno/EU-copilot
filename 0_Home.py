@@ -1,4 +1,14 @@
+"""
+Project:        EU Copilot App
+Module Name:    Master app script
+Author:         Carlos Alberto Toruño Paniagua
+Date:           October 19th, 2023
+Description:    This module contains the home page code for the EU Copilot App
+This version:   October 23rd, 2023
+"""
+
 import streamlit as st
+import pandas as pd
 
 # Page config
 st.set_page_config(
@@ -10,8 +20,25 @@ st.set_page_config(
 with open("styles.css") as stl:
     st.markdown(f"<style>{stl.read()}</style>", 
                 unsafe_allow_html=True)
+    
+# Reading Codebook & DataMap
+@st.cache_data
+def load_datamap():
+    datamap = pd.read_excel("inputs/EU2 GPP 2023 Full Datamap.xlsx", 
+                            sheet_name = "Data Map")
+    return datamap
 
-st.title("EU-S Copilot")
+@st.cache_data
+def load_codebook():
+    datamap = pd.read_excel("inputs/EU2 GPP 2023 Codebook.xlsx", 
+                            sheet_name = "Codebook")
+    return datamap
+
+datamap  = load_datamap()
+codebook = load_codebook() 
+
+st.markdown("<h1 style='text-align: center;'>EU-S Copilot</h1>", 
+            unsafe_allow_html=True)
 st.markdown(
     """
     <p class='jtext'>

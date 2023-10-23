@@ -23,3 +23,11 @@ div .streamlit-expanderHeader{
     font-weight: 600;
     color: #393B3B;
 }
+
+.row {
+    display: flex;
+}
+
+.column {
+    flex: 50%;
+}

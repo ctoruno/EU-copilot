@@ -4,10 +4,12 @@ Author:         Carlos Alberto Toruño Paniagua
 Date:           October 19th, 2023
 Description:    This module contains all the functions and classes to be used by the EU Copilot 
                 app in the cleaning process for the GPP data.
-This version:   October 19th, 2023
+This version:   October 23rd, 2023
 """
 
 import math
+import streamlit as st
+import base64
 
 def dtaNames(df, datamap, ignore_case = False):
     """
@@ -62,7 +64,6 @@ def dtaValues(df, datamap, missing_vals):
     dict:       Dictionary with two elements as values: (1) a count of the number of observations 
                 outside the expected range per variable, and (2) a list containing the expected 
                 values of that variable according to the datamap.
-
     """
 
     # Defining columns to check
@@ -131,3 +132,19 @@ def dtaValues(df, datamap, missing_vals):
     return results
 
 
+def show_pdf(file_path):
+    """
+    This function takes a local path to a PDF document in the local files and generates an
+    iframe to dissplay it.
+
+    Parameters:
+    file_path:  String. Path to PDF file in the local files.
+
+    Returns:
+    HTML:       HTML code with iframe to preview the PDF file.
+    """
+    with open(file_path,"rb") as f:
+        base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="800" height="800" type="application/pdf"></iframe>'
+    st.markdown(pdf_display, 
+                unsafe_allow_html = True)
