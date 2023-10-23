@@ -1,7 +1,7 @@
 # EU-copilot
 GitHub repo containing all the code files for the execution of the EU-copilot app.
 
-The **EU-S Copilot** is a web app designed to assist Data Analysts in their data-cleaning, harmonizing, and validation tasks for data collected from public opinion polls and expert-coded questionnaires.
+The [**EU-S Copilot**](https://eu-copilot.streamlit.app/) is a web app designed to assist Data Analysts in their data-cleaning, harmonizing, and validation tasks for data collected from public opinion polls and expert-coded questionnaires.
 
 ![](inputs/preview.png)
 
