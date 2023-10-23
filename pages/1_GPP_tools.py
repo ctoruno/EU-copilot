@@ -1,25 +1,9 @@
-import re
 import pandas as pd
 import streamlit as st
 # import tools.gpp_tools as gpp
 
 
 def dtaNames(df, datamap, ignore_case = False):
-    """
-    This function takes the pre-defined data map and a data frame as inputs and returns a 
-    dictionary containg the names of the variables that are, either in the data but not listed in 
-    the data map, or those variables that are listed in the data map but were not found in the 
-    data.
-
-    Parameters:
-    df:             Data frame containg the data to be analyzed.
-    datamap:        Object containg the data map as a pandas data frame.
-    ignore_case:    Boolean. Should the match ignore lower/upper case in names?
-
-    Returns:
-    dict:       Dictionary with lists of variable names as values
-
-    """
 
     # Defining inputs
     cnames    = df.columns
@@ -42,21 +26,6 @@ def dtaNames(df, datamap, ignore_case = False):
 
 
 def dtaValues(df, datamap, missing_vals):
-    """
-    This function takes the pre-defined data map and a data frame as inputs and returns a 
-    dictionary containg the names of the variables that are, either in the data but not listed in 
-    the data map, or those variables that are listed in the data map but were not found in the 
-    data.
-
-    Parameters:
-    df:             Data frame containg the data to be analyzed.
-    datamap:        Object containg the data map as a pandas data frame.
-    ignore_case:    Boolean. Should the match ignore lower/upper case in names?
-
-    Returns:
-    dict:       Dictionary with lists of variable names as values
-
-    """
 
     # Defining columns to check
     cnames     = df.columns

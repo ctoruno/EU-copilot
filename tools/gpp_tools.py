@@ -23,7 +23,6 @@ def dtaNames(df, datamap, ignore_case = False):
 
     Returns:
     dict:       Dictionary with lists of variable names as values
-
     """
 
     # Defining inputs
@@ -48,18 +47,21 @@ def dtaNames(df, datamap, ignore_case = False):
 
 def dtaValues(df, datamap, missing_vals):
     """
-    This function takes the pre-defined data map and a data frame as inputs and returns a 
-    dictionary containg the names of the variables that are, either in the data but not listed in 
-    the data map, or those variables that are listed in the data map but were not found in the 
-    data.
+    This function takes the pre-defined data map, a target data frame, and a list containing the
+    the names of the variables that are missing in the target data and returns a dictionary with
+    two elements as values: (1) a count of the number of observations outside the expected range
+    per variable, and (2) a list containing the expected values of that variable according to
+    the datamap.
 
     Parameters:
     df:             Data frame containg the data to be analyzed.
     datamap:        Object containg the data map as a pandas data frame.
-    ignore_case:    Boolean. Should the match ignore lower/upper case in names?
+    missing_vals:   List containg the names of the variables that are not present in the 
 
     Returns:
-    dict:       Dictionary with lists of variable names as values
+    dict:       Dictionary with two elements as values: (1) a count of the number of observations 
+                outside the expected range per variable, and (2) a list containing the expected 
+                values of that variable according to the datamap.
 
     """
 
