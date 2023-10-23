@@ -1,0 +1,136 @@
+import re
+import pandas as pd
+import streamlit as st
+import tools.gpp_tools as gpp
+
+st.title("GPP tools")
+
+# Reading Codebook & DataMa
+datamap = pd.read_excel("inputs/EU2 GPP 2023 Full Datamap.xlsx", 
+                        sheet_name = "Data Map")
+
+# Creating a container for Step 1
+step1 = st.container()
+with step1:
+
+    # Container Title
+    st.markdown("<h4>Step 1: File conversion and UTF-8 encoding",
+                unsafe_allow_html = True)
+    
+    # Uploader widget
+    uploaded_file = st.file_uploader("Upload a Stata DTA file", 
+                                     type = ["dta"])
+    
+    
+    # Read the uploaded file using Pandas
+    if uploaded_file is not None:
+        try:
+            data = pd.read_stata(uploaded_file, 
+                                convert_categoricals = False, 
+                                convert_missing = False)
+            data_preview = st.expander("Click here to preview your data file")
+            with data_preview:
+                st.write("Data from the uploaded file:")
+                st.write(data)
+
+        except pd.errors.ParserError as e:
+            st.error("Error: Invalid DTA file. Please upload a valid Stata DTA file.")
+
+# Creating a container for Step 2
+step2 = st.container()
+with step2:
+
+    # Container Title
+    st.markdown("<h4>Step 2: Data structure checks",
+                unsafe_allow_html = True)
+
+    if uploaded_file is not None:
+
+        # Widget to (de)activate case sensitivity
+        scase = st.toggle(
+            "Case sensitivity?",
+            value = False,
+            help = "When mapping missing variables, should the mapping omit mismatches based on lower/upper caps?"
+        )
+    
+        dmap_missing, master_added = gpp.dtaNames(data, datamap, ignore_case = scase)
+
+        exp2_1 = st.expander("Are all the variables listed in the data map present in the data set?")
+        with exp2_1:
+            st.markdown(
+                """
+                <p class='jtext'><b>
+                The following elements were not found in the uploaded data file:
+                </b></p>
+                """,
+                unsafe_allow_html = True
+            )
+            st.write(dmap_missing)
+            st.markdown(
+                """
+                <p class='jtext'><b>
+                Use the following Stata command line(s) to generate empty values:
+                </b></p>
+                """,
+                unsafe_allow_html = True
+            )
+            for v in dmap_missing:
+                st.code("g " + v + " = .",
+                        language     = "stata", 
+                        line_numbers = False)
+
+        exp2_2 = st.expander("The following elements are present in the data file but they are not listed in the data map:")
+        with exp2_2:
+            st.markdown(
+                """
+                <p class='jtext'><b>
+                The following elements are present in the data file but they are not listed in the data map:
+                </b></p>
+                """,
+                unsafe_allow_html = True
+            )
+            st.write(master_added)
+            st.markdown(
+                """
+                <p class='jtext'><b>
+                Use the following Stata command line(s) to drop these variables:
+                </b></p>
+                """,
+                unsafe_allow_html = True
+            )
+            st.code("drop " + " ".join(master_added),
+                    language     = "stata", 
+                    line_numbers = False)
+    
+        exp2_3 = st.expander("Does any variable surpass the expected value range?")
+        with exp2_3:
+
+            range_checks = gpp.dtaValues(data, datamap, dmap_missing)
+            counts       = [sublist[0] for sublist in list(range_checks.values())]
+
+            if sum(counts) == 0:
+                st.markdown(
+                """
+                <p class='jtext'><b>
+                No variable found with values outside the expected range
+                </b></p>
+                """,
+                unsafe_allow_html = True
+            )
+            else:
+                for column, result in range_checks.items():
+                    if result[0] > 0 and len(result[1]) > 0:
+                        st.code(f"At least one value in {column} is outside the expected range.")
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            st.write("Variable presents the following frequencies:")
+                            st.write(data[column].value_counts().sort_index())
+                        with col2:
+                            st.write("Available choices:")
+                            st.write(result[1])
+    else:
+        st.markdown("<p class='jtext'><b>Please upload a data file before continuing.</b></p>",
+                    unsafe_allow_html = True
+        )
+
+                    

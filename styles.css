@@ -1,0 +1,25 @@
+.jtext {
+    text-align: justify;
+    text-justify: auto;
+    color: #393B3B;
+}
+
+.vdesc {
+    text-align: justify;
+    text-justify: auto;
+    color: #393B3B;
+    font-size: 14px;
+}
+
+#MainMenu {
+    visibility: hidden;
+}
+
+footer{
+    visibility: hidden;
+}
+
+div .streamlit-expanderHeader{
+    font-weight: 600;
+    color: #393B3B;
+}
