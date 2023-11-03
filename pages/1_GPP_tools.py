@@ -41,16 +41,24 @@ st.markdown(
 )
 
 # Preview/Hide button
-if 'button' not in st.session_state:
-    st.session_state.button = False
+# if 'button' not in st.session_state:
+#     st.session_state.button = False
 
-def click_button():
-    st.session_state.button = not st.session_state.button
+# def click_button():
+#     st.session_state.button = not st.session_state.button
 
-cb_preview = st.button("Click here to preview/hide the protocol",
-                        on_click = click_button)
-if st.session_state.button:
-    gpp.show_pdf("inputs/GPP-cleaning-and-validation-protocol.pdf")
+# cb_preview = st.button("Click here to preview/hide the protocol",
+#                         on_click = click_button)
+# if st.session_state.button:
+#     gpp.show_pdf("inputs/GPP-cleaning-and-validation-protocol.pdf")
+
+with open("inputs/GPP-cleaning-and-validation-protocol.pdf", "rb") as pdf_file:
+    PDFbyte = pdf_file.read()
+
+st.download_button(label="Download Protocol", 
+        data      = PDFbyte,
+        file_name = "pandas-clean-id-column.pdf",
+        mime      = 'application/octet-stream')
 
 # Reading Codebook & DataMap
 @st.cache_data
