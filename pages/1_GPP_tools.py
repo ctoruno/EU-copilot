@@ -199,7 +199,7 @@ with tools_container:
                             st.write(data[column].value_counts().sort_index())
                         with col2:
                             st.write("Available choices:")
-                            st.write(result[1])
+                            st.write(pd.DataFrame(result[1]))
     else:
         st.markdown("<p class='jtext'><b>Please upload a data file before continuing.</b></p>",
                     unsafe_allow_html = True
