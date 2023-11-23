@@ -58,7 +58,8 @@ def dtaValues(df, datamap, missing_vals):
     Parameters:
     df:             Data frame containg the data to be analyzed.
     datamap:        Object containg the data map as a pandas data frame.
-    missing_vals:   List containg the names of the variables that are not present in the 
+    missing_vals:   List containg the names of the variables that are not present in the data
+                    but isted in the data map
 
     Returns:
     dict:       Dictionary with two elements as values: (1) a count of the number of observations 
@@ -78,8 +79,15 @@ def dtaValues(df, datamap, missing_vals):
         "paff1", "A1", "COLOR"
     ]
     vars2check = [x.strip() for x in cnames if x not in missing_vals]
-    vars2check = [x for x in vars2check if x not in svars]
+    vars2check = [x.lower() for x in vars2check if x not in svars]
+
+    # Variables from data map
+    datamap["Variable"] = datamap["Variable"].map(str.lower)
+    dmap_vars  = datamap["Variable"]
     
+    # Renaming variables to lowercase
+    df.columns = [x.lower() for x in df.columns]
+
     # Create an empty dictionary to store results for each column
     results = {}
 
@@ -125,7 +133,7 @@ def dtaValues(df, datamap, missing_vals):
             choices = []
 
         if scale in["Open", "Fix"]:
-            results[target] = (0, choices)
+            results[target] = (0, ["Open/Fix entry"])
         else:
             results[target] = ((~df[target].isin(choices)).sum(), choices)
 

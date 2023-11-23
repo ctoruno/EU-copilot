@@ -76,18 +76,19 @@ def load_codebook():
 datamap  = load_datamap()
 codebook = load_codebook() 
 
+st.markdown("------")
+
 # Creating a container for Step 1
-step1 = st.container()
-with step1:
+dataup_container = st.container()
+with dataup_container:
 
     # Container Title
-    st.markdown("<h4>Step 1: File conversion and UTF-8 encoding",
+    st.markdown("<h4>Data uploading</h4>",
                 unsafe_allow_html = True)
     
     # Uploader widget
     uploaded_file = st.file_uploader("Upload a Stata DTA file", 
                                      type = ["dta"])
-    
     
     # Read the uploaded file using Pandas
     if uploaded_file is not None:
@@ -103,12 +104,14 @@ with step1:
         except pd.errors.ParserError as e:
             st.error("Error: Invalid DTA file. Please upload a valid Stata DTA file.")
 
+    st.markdown("------")
+
 # Creating a container for Step 2
-step2 = st.container()
-with step2:
+tools_container = st.container()
+with tools_container:
 
     # Container Title
-    st.markdown("<h4>Step 2: Data structure checks",
+    st.markdown("<h4>Checks results:</h4>",
                 unsafe_allow_html = True)
 
     if uploaded_file is not None:
@@ -174,6 +177,8 @@ with step2:
 
             range_checks = gpp.dtaValues(data, datamap, dmap_missing)
             counts       = [sublist[0] for sublist in list(range_checks.values())]
+
+            # st.write(range_checks)
 
             if sum(counts) == 0:
                 st.markdown(

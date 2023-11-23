@@ -124,7 +124,7 @@ if submit_button:
             vmodule  = row["Survey Module"]
             global_name = row["Global GPP"]
             description = row["Description"]
-            q2023_name  = row["2023 EU Questionnaire"]
+            q2023_name  = row["2023  EU Questionnaire"]
 
             variable_html_layout = f"""
                                     <div>
