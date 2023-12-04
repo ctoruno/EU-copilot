@@ -94,8 +94,9 @@ with dataup_container:
     if uploaded_file is not None:
         try:
             data = pd.read_stata(uploaded_file, 
-                                convert_categoricals = False, 
-                                convert_missing = False)
+                                 convert_categoricals = False,
+                                 convert_dates        = False, 
+                                 convert_missing      = False)
             data_preview = st.expander("Click here to preview your data file")
             with data_preview:
                 st.write("Data from the uploaded file:")
@@ -106,7 +107,7 @@ with dataup_container:
 
     st.markdown("------")
 
-# Creating a container for Step 2
+# Creating a container for Checks
 tools_container = st.container()
 with tools_container:
 
