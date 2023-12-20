@@ -4,12 +4,13 @@ Module Name:    GPP Tools Page
 Author:         Carlos Alberto Toruño Paniagua
 Date:           October 19th, 2023
 Description:    This module contains the code of the GPP Tools tab for the EU Copilot App
-This version:   October 23rd, 2023
+This version:   December 5th, 2023
 """
 
 import pandas as pd
 import streamlit as st
 import tools.gpp_tools as gpp
+import copy
 
 # Page config
 st.set_page_config(
@@ -52,6 +53,8 @@ st.markdown(
 # if st.session_state.button:
 #     gpp.show_pdf("inputs/GPP-cleaning-and-validation-protocol.pdf")
 
+
+# Download protocol buttton
 with open("inputs/GPP-cleaning-and-validation-protocol.pdf", "rb") as pdf_file:
     PDFbyte = pdf_file.read()
 
@@ -78,29 +81,59 @@ codebook = load_codebook()
 
 st.markdown("------")
 
-# Creating a container for Step 1
+# Creating a container for data loading
 dataup_container = st.container()
 with dataup_container:
 
-    # Container Title
     st.markdown("<h4>Data uploading</h4>",
                 unsafe_allow_html = True)
     
+    valabs = st.toggle(
+        "Would you like to read the value labels?",
+        value = False
+    )
+    
     # Uploader widget
+    if valabs == True:
+        st.write(
+            """
+            **IMPORTANT**: _We higly suggest uploading a DTA file with variable names fixed, 
+            but NO labelling standardization performed_.
+            """
+            )
     uploaded_file = st.file_uploader("Upload a Stata DTA file", 
                                      type = ["dta"])
+    
+    upfile_duplicate = copy.copy(uploaded_file)
     
     # Read the uploaded file using Pandas
     if uploaded_file is not None:
         try:
-            data = pd.read_stata(uploaded_file, 
-                                 convert_categoricals = False,
-                                 convert_dates        = False, 
-                                 convert_missing      = False)
-            data_preview = st.expander("Click here to preview your data file")
-            with data_preview:
+            if valabs == False:
+                data = pd.read_stata(uploaded_file,
+                                     convert_categoricals = False,
+                                     convert_dates        = False, 
+                                     convert_missing      = False)
+
+            # We need to read the data twice if we want to perform the value label checks                
+            else:
+                data = pd.read_stata(uploaded_file,
+                                     convert_categoricals = False,
+                                     convert_dates        = False, 
+                                     convert_missing      = False)
+                
+                data_alpha = gpp.read_dta(upfile_duplicate)
+
+            # Data preview expanders
+            data_preview1 = st.expander("Click here to preview your data file")
+            with data_preview1:
                 st.write("Data from the uploaded file:")
                 st.write(data)
+            if valabs == True:
+                data_preview2 = st.expander("Click here to preview your data file (with value labels)")
+                with data_preview2:
+                    st.write("Data from the uploaded file (with value labels):")
+                    st.write(data_alpha)
 
         except pd.errors.ParserError as e:
             st.error("Error: Invalid DTA file. Please upload a valid Stata DTA file.")
@@ -111,11 +144,10 @@ with dataup_container:
 tools_container = st.container()
 with tools_container:
 
-    # Container Title
     st.markdown("<h4>Checks results:</h4>",
                 unsafe_allow_html = True)
 
-    if uploaded_file is not None:
+    if uploaded_file is not None and valabs == False:
 
         # Widget to (de)activate case sensitivity
         scase = st.toggle(
@@ -123,9 +155,11 @@ with tools_container:
             value = False,
             help = "When mapping missing variables, should the mapping omit mismatches based on lower/upper caps?"
         )
-    
+
+        # Applying the GPP tools
         dmap_missing, master_added = gpp.dtaNames(data, datamap, ignore_case = scase)
 
+        # Displaying results within expanders
         exp2_1 = st.expander("Are all the variables listed in the data map present in the data set?")
         with exp2_1:
             st.markdown(
@@ -172,14 +206,13 @@ with tools_container:
             st.code("drop " + " ".join(master_added),
                     language     = "stata", 
                     line_numbers = False)
-    
+
+        # Applying the additional check for range checks
         exp2_3 = st.expander("Does any variable surpass the expected value range?")
         with exp2_3:
 
             range_checks = gpp.dtaValues(data, datamap, dmap_missing)
             counts       = [sublist[0] for sublist in list(range_checks.values())]
-
-            # st.write(range_checks)
 
             if sum(counts) == 0:
                 st.markdown(
@@ -201,6 +234,58 @@ with tools_container:
                         with col2:
                             st.write("Available choices:")
                             st.write(pd.DataFrame(result[1]))
+    
+    # Separate container for value label checks
+    elif uploaded_file is not None and valabs == True:
+
+        st.markdown(
+                """
+                <p class='jtext'>
+                <b>Inconsistencies in the value labels were found in the variables listed below.</b>
+                
+                This might be due to minor string additions such as typos, additional white spaces, etc.
+                Please check the tables below to review the extent of the issue. 
+                </p>
+                """,
+                unsafe_allow_html = True
+            )
+        
+        # Filtering datamap for only those variables that we need to perform the check
+        filtered_datamap = datamap[~(datamap["Label"].isin(["unchecked"]))]
+
+        # Applying the GPP check for value labels
+        results = [gpp.vals_checks(df_nums      = data, 
+                                   df_labs      = data_alpha, 
+                                   filtered_map = filtered_datamap, 
+                                   target       = row["Variable"], 
+                                   lab_class    = row["Label"])
+                   for lab, row in filtered_datamap.iterrows()]
+        
+        # Filtering results for only those who DID NOT passed the test
+        filtered_results = [x for x in results if x[1] == False]
+        cols = [x[0] for x in results if x[1] == False]
+        diff = [x[2] for x in results if x[1] == False]
+        rule = [x[3] for x in results if x[1] == False]
+
+        for i, x in enumerate(cols):
+            with st.expander(f"Variable: {x}"):
+
+                df1 = (data
+                       .iloc[diff[i]]
+                       .loc[:,x])
+                df2 = (data_alpha
+                       .iloc[diff[i]]
+                       .loc[:,[x]]
+                       .rename(columns = {x : f"{x}_alpha"}))
+
+                valab_results = pd.concat([df1, df2], axis = 1)
+                st.write("The value label rule is as follows:")
+                st.write(rule[i])
+                st.markdown("------")
+                st.write("Below, you can see the variable encoded values along with their equivalent label. Only the rows were a mismatch was detected are shown:")
+                st.write(valab_results)
+
+
     else:
         st.markdown("<p class='jtext'><b>Please upload a data file before continuing.</b></p>",
                     unsafe_allow_html = True
