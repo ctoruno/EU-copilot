@@ -65,6 +65,16 @@ would like your search to be based on variable names instead of variable descrip
 this box.
 """
 
+# Choosing codebook
+
+st.markdown("<h4>Choose a Codebook:</h4>",
+            unsafe_allow_html = True)
+cb  = st.selectbox("Select which codebook you would like to search:",
+                            ('GPP', 'QRQ'),
+                        )
+
+#once you select QRQ, next should be which questionnaire? second filter should be modules in those questionnaire,
+# in results create new column of tbd for the global gpp name
 # Search Box Inputs
 
 st.markdown("<h4>Search questions based on:</h4>",
