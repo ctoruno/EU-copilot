@@ -31,13 +31,18 @@ def load_datamap():
     return datamap
 
 @st.cache_data
-def load_codebook():
+def load_codebook_gpp():
     datamap = pd.read_excel("inputs/EU2 GPP 2023 Codebook.xlsx", 
                             sheet_name = "Codebook")
     return datamap
 
+@st.cache_data
+def load_codebook_qrq():
+    datamap = pd.read_excel("inputs/EU2 QRQ 2023 Codebook.xlsx", 
+                            sheet_name = "Codebook")
+    return datamap
+
 datamap  = load_datamap()
-codebook = load_codebook() 
 
 # Header and explanation
 st.markdown("<h1 style='text-align: center;'>Codebook Explorer</h1>", 
@@ -73,70 +78,70 @@ cb  = st.selectbox("Select which codebook you would like to search:",
                             ('GPP', 'QRQ'),
                         )
 
-#once you select QRQ, next should be which questionnaire? second filter should be modules in those questionnaire,
-# in results create new column of tbd for the global gpp name
 # Search Box Inputs
 
-st.markdown("<h4>Search questions based on:</h4>",
+if 'GPP' in cb:
+    codebook = load_codebook_gpp() 
+    st.markdown("<h4>Search questions based on:</h4>",
             unsafe_allow_html = True)
-keywords = st.text_input("The following keywords:",
+    keywords = st.text_input("The following keywords:",
                             help = keywords_hlp)
-target   = st.checkbox("Search variables by description",
+    target   = st.checkbox("Search variables by description",
                         help  = chkbox_hlp,
                         value = True)
-modules_list = sorted(codebook["Survey Module"].astype(str).unique())
-modules  = st.multiselect("Select a thematic module from the following list:",
+    modules_list = sorted(codebook["Survey Module"].astype(str).unique())
+    modules  = st.multiselect("Select a thematic module from the following list:",
                             modules_list,
                             default = None)
-topics_list = (codebook[codebook["Survey Module"]
+    topics_list = (codebook[codebook["Survey Module"]
                         .isin(modules)]["Topic"]
                         .unique()
                         .tolist())
 
-topics   = st.multiselect("Select a question topic based on the selected modules:",
+    topics   = st.multiselect("Select a question topic based on the selected modules:",
                             topics_list,
                             default = None)   
-submit_button = st.button(label = "Search!")
+    submit_button = st.button(label = "Search!")
 
-if submit_button:
+    if submit_button:
 
     # Transforming keywords
-    keys = []
-    keywords = re.sub(" OR ", "|", keywords)
-    for key in keywords.split():
-        regexkey = f"(?=.*{key})"
-        keys.append(regexkey)
-    keys = "^" + "".join(keys)
+        keys = []
+        keywords = re.sub(" OR ", "|", keywords)
+        for key in keywords.split():
+            regexkey = f"(?=.*{key})"
+            keys.append(regexkey)
+        keys = "^" + "".join(keys)
 
     # Filtering results
-    if target == False:
-        targetCol = "Variable"
-    else: 
-        targetCol = "Description"
+        if target == False:
+            targetCol = "Variable"
+        else: 
+            targetCol = "Description"
 
-    results = codebook[codebook[targetCol].str.contains(keys, case = False)]
+        results = codebook[codebook[targetCol].str.contains(keys, case = False)]
 
-    if modules != []:
-        results = codebook[codebook["Survey Module"].astype(str).isin(modules)]
-    if topics != []:
-        results = codebook[codebook["Topic"].isin(topics)]
+        if modules != []:
+            results = codebook[codebook["Survey Module"].astype(str).isin(modules)]
+        if topics != []:
+            results = codebook[codebook["Topic"].isin(topics)]
 
     # Success Box
-    nresults = len(results.index)
-    st.success(f"Your search returned {nresults} results.")
+        nresults = len(results.index)
+        st.success(f"Your search returned {nresults} results.")
 
-    for index, row in results.iterrows():
+        for index, row in results.iterrows():
 
-        with st.container():
-            vtopic = row["Topic"]
-            vname  = row["Variable"]
-            vanswers = row["Values"]
-            vmodule  = row["Survey Module"]
-            global_name = row["Global GPP"]
-            description = row["Description"]
-            q2023_name  = row["2023  EU Questionnaire"]
+            with st.container():
+                vtopic = row["Topic"]
+                vname  = row["Variable"]
+                vanswers = row["Values"]
+                vmodule  = row["Survey Module"]
+                global_name = row["Global GPP"]
+                description = row["Description"]
+                q2023_name  = row["2023  EU Questionnaire"]
 
-            variable_html_layout = f"""
+                variable_html_layout = f"""
                                     <div>
                                         <h4>{vname}</h4>
                                         <p class='jtext'><strong>Description:</strong></p>
@@ -161,11 +166,112 @@ if submit_button:
                                     </div>
                                     """
             
-            st.markdown(variable_html_layout,
+                st.markdown(variable_html_layout,
                         unsafe_allow_html = True)
             
-            with st.expander("Coded Answers"):
-                stc.html(vanswers, 
+                with st.expander("Coded Answers"):
+                    stc.html(vanswers, 
                          scrolling = True)
                 
-            st.markdown("---")
+                st.markdown("---")
+
+if 'QRQ' in cb:
+    codebook = load_codebook_qrq() 
+    st.markdown("<h4>Search questions based on:</h4>",
+            unsafe_allow_html = True)
+    
+    questionnaire  = st.multiselect("Select one or more questionnaires from the following list:",
+                            ('CJ', 'CCA', 'CCB', 'GOV'),
+                            default = None)
+
+    keywords = st.text_input("The following keywords:",
+                            help = keywords_hlp)
+    target   = st.checkbox("Search variables by description",
+                        help  = chkbox_hlp,
+                        value = True)
+    modules_list = sorted(codebook["Module"].astype(str).unique())
+    modules  = st.multiselect("Select a thematic module from the following list:",
+                            modules_list,
+                            default = None)
+    #topics_list = (codebook[codebook["Module"]
+                        #.isin(modules)]["Topic"]
+                        #.unique()
+                        #.tolist())
+
+    #topics   = st.multiselect("Select a question topic based on the selected modules:",
+     #                       topics_list,
+      #                      default = None)   
+    submit_button = st.button(label = "Search!")
+
+    if submit_button:
+
+    # Transforming keywords
+        keys = []
+        keywords = re.sub(" OR ", "|", keywords)
+        for key in keywords.split():
+            regexkey = f"(?=.*{key})"
+            keys.append(regexkey)
+        keys = "^" + "".join(keys)
+
+    # Filtering results
+        if target == False:
+            targetCol = "Keywords"
+        else: 
+            targetCol = "Description"
+
+        results = codebook[codebook[targetCol].str.contains(keys, case = False)]
+
+        if questionnaire != []:
+            results = codebook[codebook["Questionnaire"].astype(str).isin(questionnaire)]
+        if modules != []:
+            results = codebook[codebook["Module"].astype(str).isin(modules)]
+        
+
+    # Success Box
+        nresults = len(results.index)
+        st.success(f"Your search returned {nresults} results.")
+
+        for index, row in results.iterrows():
+
+            with st.container():
+                vname  = row["Keywords"]
+                vanswers = row["Values"]
+                vmodule  = row["Module"]
+                vquest = row["Questionnaire"]
+                global_name = row["Global GPP Equivalent"]
+                description = row["Description"]
+                q2023_name  = row["Names"]
+
+                variable_html_layout = f"""
+                                    <div>
+                                        <h4>{vname}</h4>
+                                        <p class='jtext'><strong>Description:</strong></p>
+                                        <p class='vdesc'>{description}</h4>
+                                        <br>
+                                        <div class="row">
+                                            <div class="column">
+                                                <p class='jtext'><strong>Questionnaire:</strong> {vquest}</p>
+                                            </div>
+                                            <div class="column">
+                                                <p class='jtext'><strong>Module:</strong> {vmodule}</p>
+                                            </div> 
+                                        </div>
+                                        <div class="row">
+                                            <div class="column">
+                                                <p class='jtext'><strong>Name in Global GPP:</strong> {global_name}</p>
+                                            </div>
+                                            <div class="column">
+                                                <p class='jtext'><strong>Name in EU QRQ Questionnaire:</strong> {q2023_name}</p>
+                                            </div> 
+                                        </div>
+                                    </div>
+                                    """
+            
+                st.markdown(variable_html_layout,
+                        unsafe_allow_html = True)
+            
+                with st.expander("Coded Answers"):
+                    stc.html(vanswers, 
+                         scrolling = True)
+                
+                st.markdown("---")
