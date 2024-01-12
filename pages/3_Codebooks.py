@@ -122,9 +122,11 @@ if 'GPP' in cb:
         results = codebook[codebook[targetCol].str.contains(keys, case = False)]
 
         if modules != []:
-            results = codebook[codebook["Survey Module"].astype(str).isin(modules)]
+            resultmd = codebook[codebook["Survey Module"].astype(str).isin(modules)]
+            results = resultmd[resultmd[targetCol].str.contains(keys, case = False)]
         if topics != []:
-            results = codebook[codebook["Topic"].isin(topics)]
+            resulttp = codebook[codebook["Topic"].isin(topics)]
+            results = resulttp[resulttp[targetCol].str.contains(keys, case = False)]
 
     # Success Box
         nresults = len(results.index)
@@ -190,6 +192,9 @@ if 'QRQ' in cb:
                         help  = chkbox_hlp,
                         value = True)
     modules_list = sorted(codebook["Module"].astype(str).unique())
+    if questionnaire != []:
+            modsq = codebook[codebook["Questionnaire"].astype(str).isin(questionnaire)]
+            modules_list = sorted(modsq["Module"].astype(str).unique())
     modules  = st.multiselect("Select a thematic module from the following list:",
                             modules_list,
                             default = None)
@@ -222,9 +227,11 @@ if 'QRQ' in cb:
         results = codebook[codebook[targetCol].str.contains(keys, case = False)]
 
         if questionnaire != []:
-            results = codebook[codebook["Questionnaire"].astype(str).isin(questionnaire)]
+            resultq = codebook[codebook["Questionnaire"].astype(str).isin(questionnaire)]
+            results = resultq[resultq[targetCol].str.contains(keys, case = False)]
         if modules != []:
-            results = codebook[codebook["Module"].astype(str).isin(modules)]
+            resultm = codebook[codebook["Module"].astype(str).isin(modules)]
+            results = resultm[resultm[targetCol].str.contains(keys, case = False)]
         
 
     # Success Box
