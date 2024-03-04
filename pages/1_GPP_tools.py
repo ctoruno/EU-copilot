@@ -140,6 +140,21 @@ with dataup_container:
 
     st.markdown("------")
 
+
+eu_info_df = pd.read_csv("inputs/EU_general_information.csv", encoding = 'Windows-1252')  
+
+company_list = eu_info_df['company'].unique()
+selected_company = st.selectbox('Select a Company:', company_list)
+
+if selected_company:
+    filtered_df = eu_info_df[eu_info_df['company'] == selected_company]
+
+    display_df = filtered_df[['country_name_ltn', 'main_religion', 'incumbent_party']]
+    st.write('Results for Selected Company:')
+    st.dataframe(display_df)
+
+st.markdown("------")
+
 # Creating a container for Checks
 tools_container = st.container()
 with tools_container:
