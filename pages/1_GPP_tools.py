@@ -149,7 +149,7 @@ selected_company = st.selectbox('Select a Company:', company_list)
 if selected_company:
     filtered_df = eu_info_df[eu_info_df['company'] == selected_company]
 
-    display_df = filtered_df[['country_name_ltn', 'main_religion', 'incumbent_party']]
+    display_df = filtered_df[['country_name_ltn', 'main_religion', 'incumbent_party']].reset_index(drop=True)
     st.write('Results for Selected Company:')
     st.dataframe(display_df)
 
