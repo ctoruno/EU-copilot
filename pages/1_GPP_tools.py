@@ -140,17 +140,24 @@ with dataup_container:
 
     st.markdown("------")
 
+st.markdown("<h4>Polling Company Information Lookup</h4>",
+                unsafe_allow_html = True)
+st.markdown("""
+This section allows you to select a polling company from the dropdown menu to view its related information.
+Upon selection, the app will display a list of countries where the selected polling company operates, 
+alongside the main religion and the incumbent political party in those countries.
+""")
 
 eu_info_df = pd.read_csv("inputs/EU_general_information.csv", encoding = 'Windows-1252')  
 
 company_list = eu_info_df['company'].unique()
-selected_company = st.selectbox('Select a Company:', company_list)
+selected_company = st.selectbox('Select a  Polling Company:', company_list)
 
 if selected_company:
     filtered_df = eu_info_df[eu_info_df['company'] == selected_company]
 
     display_df = filtered_df[['country_name_ltn', 'main_religion', 'incumbent_party']].reset_index(drop=True)
-    st.write('Results for Selected Company:')
+    st.write('Results for selected Polling Company:')
     st.dataframe(display_df)
 
 st.markdown("------")
