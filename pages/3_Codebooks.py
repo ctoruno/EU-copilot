@@ -71,15 +71,14 @@ this box.
 """
 
 # Choosing codebook
-
 st.markdown("<h4>Choose a Codebook:</h4>",
             unsafe_allow_html = True)
-cb  = st.selectbox("Select which codebook you would like to search:",
-                            ('GPP', 'QRQ'),
-                        )
+cb  = st.selectbox(
+    "Select which codebook you would like to search:",
+    ('GPP', 'QRQ')                        
+)
 
 # Search Box Inputs
-
 if 'GPP' in cb:
     codebook = load_codebook_gpp() 
     st.markdown("<h4>Search questions based on:</h4>",
@@ -105,7 +104,7 @@ if 'GPP' in cb:
 
     if submit_button:
 
-    # Transforming keywords
+        # Transforming keywords
         keys = []
         keywords = re.sub(" OR ", "|", keywords)
         for key in keywords.split():
@@ -113,7 +112,7 @@ if 'GPP' in cb:
             keys.append(regexkey)
         keys = "^" + "".join(keys)
 
-    # Filtering results
+        # Filtering results
         if target == False:
             targetCol = "Variable"
         else: 
@@ -128,7 +127,7 @@ if 'GPP' in cb:
             resulttp = codebook[codebook["Topic"].isin(topics)]
             results = resulttp[resulttp[targetCol].str.contains(keys, case = False)]
 
-    # Success Box
+        # Success Box
         nresults = len(results.index)
         st.success(f"Your search returned {nresults} results.")
 
@@ -210,7 +209,7 @@ if 'QRQ' in cb:
 
     if submit_button:
 
-    # Transforming keywords
+        # Transforming keywords
         keys = []
         keywords = re.sub(" OR ", "|", keywords)
         for key in keywords.split():
@@ -218,7 +217,7 @@ if 'QRQ' in cb:
             keys.append(regexkey)
         keys = "^" + "".join(keys)
 
-    # Filtering results
+        # Filtering results
         if target == False:
             targetCol = "Keywords"
         else: 
@@ -233,8 +232,7 @@ if 'QRQ' in cb:
             resultm = codebook[codebook["Module"].astype(str).isin(modules)]
             results = resultm[resultm[targetCol].str.contains(keys, case = False)]
         
-
-    # Success Box
+        # Success Box
         nresults = len(results.index)
         st.success(f"Your search returned {nresults} results.")
 
