@@ -218,7 +218,9 @@ if st.session_state["country_track"]:
                                                     <p class='jtext'><strong>Impact score:</strong> {score}</p>
                                                 </div>
                                                 <div class="column">
-                                                    <p class='jtext'><strong>URL:</strong> {link}</p>
+                                                    <p class='jtext'><strong>URL:</strong>
+                                                        <a href='{link}' target='_blank'>Click here to open in a new tab</a>
+                                                    </p>
                                                 </div> 
                                             </div>
                                         </div>
