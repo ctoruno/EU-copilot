@@ -64,6 +64,12 @@ st.markdown(
     </p>
 
     <p class='jtext'>
+    In the <strong style="color:#003249">Media Reports tab</strong> you'll encounter the results of a massive
+    webscrapping exercise of news articles related to the Rule of Law, summarized and classify through AI. 
+    The results are presented by country and thematic pillar.
+    </p>
+
+    <p class='jtext'>
     If you're curious for more details about the app or if you have questions, suggestions or you want to report 
     a bug,  hop on over to the <strong style="color:#003249">Info tab</strong> in the left side bar panel.
     </p>

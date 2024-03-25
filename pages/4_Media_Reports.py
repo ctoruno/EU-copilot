@@ -101,7 +101,7 @@ if st.session_state["country_track"]:
     # Creating tabs
     overview, search = st.tabs(["Overview", "Search Engine"])
     with overview:
-        sources =  "\n\n- " + "\n\n- ".join(country_data["domain_url"].drop_duplicates().to_list())
+        sources =  "".join([f"\n\n- <a href='https://{link}' target='_blank'>{link}</a>" for link in country_data["domain_url"].drop_duplicates().to_list()])
         country_data["published_date"] = pd.to_datetime(country_data['published_date'])
         min_date = min(country_data["published_date"]).strftime("%B %d, %Y")
         max_date = max(country_data["published_date"]).strftime("%B %d, %Y")
