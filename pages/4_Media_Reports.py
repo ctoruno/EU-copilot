@@ -58,7 +58,7 @@ with country_selec:
         [
             # "Austria",
             # "Belgium",
-            # "Bulgaria",
+            "Bulgaria",
             # "Croatia",
             # "Cyprus",
             # "Czech Republic",
