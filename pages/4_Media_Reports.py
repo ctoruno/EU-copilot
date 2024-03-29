@@ -140,7 +140,7 @@ if st.session_state["country_track"]:
                     """,
                     unsafe_allow_html = True
                 )
-                pillar_bullets = summary_data[tab_name].replace("\n\n", "")
+                pillar_bullets = summary_data[tab_name].replace("\n", "\n- ")
                 st.write(pillar_bullets)
             counter = counter + 1
 
