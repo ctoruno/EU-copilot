@@ -103,8 +103,10 @@ if st.session_state["country_track"]:
     with overview:
         sources =  "".join([f"\n\n- <a href='https://{link}' target='_blank'>{link}</a>" for link in country_data["domain_url"].drop_duplicates().to_list()])
         country_data["published_date"] = pd.to_datetime(country_data['published_date'])
-        min_date = min(country_data["published_date"]).strftime("%B %d, %Y")
-        max_date = max(country_data["published_date"]).strftime("%B %d, %Y")
+        min_date  = min(country_data["published_date"]).strftime("%B %d, %Y")
+        max_date  = max(country_data["published_date"]).strftime("%B %d, %Y")
+        nrows     = len(country_data.drop_duplicates(subset='id'))
+        nrows_fmt = "{:,}".format(nrows)
         st.markdown(
             f"""
             <p class='jtext'>
@@ -117,8 +119,7 @@ if st.session_state["country_track"]:
         st.markdown(
             f"""
             <p class='jtext'>
-            The data for this country spans from <b>{min_date}</b> to <b>{max_date}</b>. For a total of 
-            {len(country_data.drop_duplicates(subset='id'))} articles.
+            The data for this country spans from <b>{min_date}</b> to <b>{max_date}</b>. For a total of {nrows_fmt} articles.
             </p>
             """,
             unsafe_allow_html = True
@@ -133,7 +134,7 @@ if st.session_state["country_track"]:
                     <p class='jtext'>
                     Below, you will find the most important issues that the Language Model identified as worth to be highlighted 
                     regarding the news articles extracted for <strong style="color:#003249">{country}, {tab_name}</strong>.
-                    The model was told to keep a maximum of 6 events/issues for every 25,000 characters  of data. Therefore, the 
+                    The model was told to keep a maximum of 10 events/issues for every 1000,000 words. Therefore, the 
                     summaries displayed below might vary in extention <i>depending on the extent of information extracted for each country</i>.
                     </p>
                     """,
