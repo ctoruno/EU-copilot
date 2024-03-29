@@ -121,6 +121,12 @@ if st.session_state["country_track"]:
             <p class='jtext'>
             The data for this country spans from <b>{min_date}</b> to <b>{max_date}</b>. For a total of {nrows_fmt} articles.
             </p>
+
+            <p class='jtext'>
+            Bellow, you can find a brief summary of the main issues and events related to each one of the 8 pillars of the Rule of Law. <b>The
+            summaries were produced using AI</b>, after the model was presented with the project's theoretical framework. Therefore, 
+            please read them carefully.
+            </p>
             """,
             unsafe_allow_html = True
         )
@@ -140,7 +146,7 @@ if st.session_state["country_track"]:
                     """,
                     unsafe_allow_html = True
                 )
-                pillar_bullets = summary_data[tab_name].replace("\n", "\n- ")
+                pillar_bullets = "- " + summary_data[tab_name].replace("-", "").replace("/n", "\n- ")
                 st.write(pillar_bullets)
             counter = counter + 1
 
