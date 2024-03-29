@@ -140,7 +140,7 @@ if st.session_state["country_track"]:
                     <p class='jtext'>
                     Below, you will find the most important issues that the Language Model identified as worth to be highlighted 
                     regarding the news articles extracted for <strong style="color:#003249">{country}, {tab_name}</strong>.
-                    The model was told to keep a maximum of 10 events/issues for every 1000,000 words. Therefore, the 
+                    The model was told to keep a maximum of 10 events/issues for every 100,0000 words. Therefore, the 
                     summaries displayed below might vary in extention <i>depending on the extent of information extracted for each country</i>.
                     </p>
                     """,
