@@ -77,7 +77,7 @@ with country_selec:
             # "Malta",
             # "Netherlands",
             # "Poland",
-            # "Portugal",
+            "Portugal",
             # "Romania",
             # "Slovakia",
             # "Slovenia",
