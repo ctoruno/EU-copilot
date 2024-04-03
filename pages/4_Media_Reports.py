@@ -190,6 +190,18 @@ if st.session_state["country_track"]:
             # Filtering results
             filtered_data = country_data.copy().loc[country_data["associated_pillar"] == assoc_pillar]
             results = filtered_data[filtered_data["summary"].str.contains(keys, case = False)]
+            results["impact_score_text"] = (
+                results["impact_score"].map(
+                    { 
+                        0 : "Undefined",
+                        1 : "Very Negative",
+                        2 : "Negative",
+                        3 : "Neutral",
+                        4 : "Positive",
+                        5 : "Very Positive",
+                    }
+                )
+            )
 
             # Success Box
             nresults = len(results.index)
@@ -201,7 +213,7 @@ if st.session_state["country_track"]:
                     title   = row["title_trans"]
                     sumdesc = row["summary"]
                     body    = row["content_trans"]
-                    score   = row["impact_score"]
+                    score   = row["impact_score_text"]
                     date    = row["published_date"].strftime("%B %d, %Y")
                     source  = row["domain_url"]
                     link    = row["link"]
