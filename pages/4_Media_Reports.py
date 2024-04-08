@@ -60,7 +60,7 @@ with country_selec:
             # "Belgium",
             "Bulgaria",
             # "Croatia",
-            # "Cyprus",
+            "Cyprus",
             # "Czech Republic",
             # "Denmark",
             "Estonia",
