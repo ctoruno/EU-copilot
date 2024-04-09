@@ -64,7 +64,7 @@ with country_selec:
             # "Czech Republic",
             # "Denmark",
             "Estonia",
-            # "Finland",
+            "Finland",
             # "France",
             # "Germany",
             # "Greece",
