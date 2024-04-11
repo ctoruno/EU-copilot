@@ -157,23 +157,35 @@ if st.session_state["country_track"]:
                 "<h4>Search articles based on:</h4>", 
                 unsafe_allow_html = True
             )
-            keywords  = st.text_input("The following keywords:")
-            # target_options = {
-            #     "Headline"    : "title_trans",
-            #     "Description" : "description_trans",
-            #     "Content"     : "content_trans" 
-            # }
-            # target_selection = st.selectbox(
-            #     "Search for these keywords in..",
-            #     target_options.keys
-            # )
+            with st.expander("Click here to see examples on how to use the Search Engine"):
+                st.markdown(
+                    """
+                    <i>The search engine supports Regular Expressions when searching for keywords. See the following examples:</i>
+                    - <i>If you want to search for articles containing the words "European" OR "funds", meaning that you only need ONE of 
+                    these words to appear in the article, you can type</i>:
+                    ```
+                    European|funds
+                    ```
+
+                    - <i>If you want to search for articles containing BOTH words "European" AND "funds" (but not necessarily together), 
+                    you can type</i>:
+                    ```
+                    \\bEuropean\\b.*\\bfunds\\b|\\bfunds\\b.*\\bEuropean\\b
+                    ```
+
+                    - <i>If you want to search for articles containing an exact match of "European funds", you can type</i>:
+                    ```
+                    \\bEuropean\\s+funds\\b
+                    ```
+                    """, 
+                    unsafe_allow_html = True
+                )
+            keywords = st.text_input("The following keywords:")
             assoc_pillar = st.selectbox(
                 "Limit the search to a specific pillar",
                 ["Pillar "+str(n) for n in range(1,9)]
             )
             search_button = st.button("Search")
-            # if search_button:
-            #     update_tracking("search_track")
 
         if search_button:
 
