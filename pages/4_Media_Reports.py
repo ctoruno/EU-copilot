@@ -61,7 +61,7 @@ with country_selec:
             "Bulgaria",
             # "Croatia",
             "Cyprus",
-            # "Czech Republic",
+            "Czechia",
             # "Denmark",
             "Estonia",
             "Finland",
@@ -79,7 +79,7 @@ with country_selec:
             # "Poland",
             "Portugal",
             # "Romania",
-            # "Slovakia",
+            "Slovakia",
             # "Slovenia",
             # "Spain",
             # "Sweden"
