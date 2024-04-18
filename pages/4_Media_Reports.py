@@ -80,7 +80,7 @@ with country_selec:
             "Portugal",
             # "Romania",
             "Slovakia",
-            # "Slovenia",
+            "Slovenia",
             # "Spain",
             # "Sweden"
         ]
