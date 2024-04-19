@@ -123,7 +123,7 @@ if st.session_state["country_track"]:
             </p>
 
             <p class='jtext'>
-            Bellow, you can find a brief summary of the main issues and events related to each one of the 8 pillars of the Rule of Law. <b>The
+            Below, you can find a brief summary of the main issues and events related to each one of the 8 pillars of the Rule of Law. <b>The
             summaries were produced using AI</b>, after the model was presented with the project's theoretical framework. Therefore, 
             please read them carefully.
             </p>
@@ -146,7 +146,8 @@ if st.session_state["country_track"]:
                     """,
                     unsafe_allow_html = True
                 )
-                pillar_bullets = "- " + summary_data[tab_name].replace("-", "").replace("/n", "\n- ")
+                pillar_bullets = re.sub("S/nk/ni/np/np/ne/nd/n /nl/ni/ns/nt/n", '', summary_data[tab_name])
+                pillar_bullets = "- " + pillar_bullets.replace("-", "").replace("/n", "\n- ")
                 st.write(pillar_bullets)
             counter = counter + 1
 
