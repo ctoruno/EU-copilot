@@ -62,7 +62,7 @@ with country_selec:
             "Croatia",
             "Cyprus",
             "Czechia",
-            # "Denmark",
+            "Denmark",
             "Estonia",
             "Finland",
             # "France",
