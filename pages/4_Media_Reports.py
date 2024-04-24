@@ -69,7 +69,7 @@ with country_selec:
             # "Germany",
             "Greece",
             "Hungary",
-            # "Ireland",
+            "Ireland",
             # "Italy",
             # "Latvia",
             # "Lithuania",
