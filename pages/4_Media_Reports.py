@@ -57,7 +57,7 @@ with country_selec:
         "Select a country from the list below:",
         [
             # "Austria",
-            # "Belgium",
+            "Belgium",
             "Bulgaria",
             "Croatia",
             "Cyprus",
