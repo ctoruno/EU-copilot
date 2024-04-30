@@ -164,9 +164,9 @@ if check_password():
     )
     fig.update_traces(
         hovertemplate="%{customdata[0]}<br>Value: %{customdata[1]:.1f}%",
-        marker = dict(
-            opacity = 0.5
-        )
+        # marker = dict(
+        #     opacity = 0.5
+        # )
     )
     fig.update_layout(
         margin = {"r":0,"t":0,"l":0,"b":0},
