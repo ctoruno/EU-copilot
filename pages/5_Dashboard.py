@@ -233,7 +233,8 @@ if check_password():
         xaxis_title = "Percentage (%)",
         yaxis_title = None,
         showlegend  = False,
-        xaxis = dict(
+        margin = {"r":0,"t":0,"l":0,"b":0},
+        xaxis  = dict(
             range = [0, 100],
             dtick = 20
         )
