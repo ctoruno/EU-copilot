@@ -71,7 +71,7 @@ with country_selec:
             "Hungary",
             "Ireland",
             # "Italy",
-            # "Latvia",
+            "Latvia",
             "Lithuania",
             "Luxembourg",
             "Malta",

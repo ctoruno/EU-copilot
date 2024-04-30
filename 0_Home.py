@@ -53,11 +53,6 @@ st.markdown(
     </p>
 
     <p class='jtext'>
-    Switch over to the <strong style="color:#003249">QRQ Tools tab</strong>, and you'll encounter a separate 
-    toolbox packed with automatic estimations to make your life easier when dealing with expert-coded data.
-    </p>
-
-    <p class='jtext'>
     Check out the <strong style="color:#003249">Codebooks tab</strong> for an interactive tool that helps 
     you easily access essential dataset information related to variables in the most recent EU GPP and 
     QRQ questionnaires.
@@ -67,6 +62,12 @@ st.markdown(
     In the <strong style="color:#003249">Media Reports tab</strong> you'll encounter the results of a massive
     webscrapping exercise of news articles related to the Rule of Law, summarized and classify through AI. 
     The results are presented by country and thematic pillar.
+    </p>
+
+    <p class='jtext'>
+    If you wish to preview the data in real time, you can take a look at the 
+    <strong style="color:#003249">Dashboard tab</strong>, where you can find interactive maps showing you the
+    latest results obtained from the GPP and QRQ data.
     </p>
 
     <p class='jtext'>
