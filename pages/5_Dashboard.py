@@ -86,11 +86,12 @@ if check_password():
     st.markdown(
         """
         <p class='jtext'>
-        Welcome to the <strong style="color:#003249">Media Reports tab</strong>. In this page you can search and
-        visualize the results a massive webscrapping exercise of newspapers for each of the 27 active members of
-        the European Union. To visualize the results, you need to first select a country in order to load the data.
-        Once the data is loaded, you will have to search for specific keywords and/or pillars of interest. The
-        search tool will list all of the articles that matched your search.
+        Welcome to the <strong style="color:#003249">GPP Dashboard</strong>. In this page you can preview the GPP data
+        as soon as it is cleaned and harmonized into our clouds. The data presented here is just a preview and 
+        <b><i>BY NO MEANS should be considered final or official</i></b>. Please use the filters below to navigate through
+        the questions of our data.
+
+        Galingan!
         </p>
         """,
         unsafe_allow_html = True
