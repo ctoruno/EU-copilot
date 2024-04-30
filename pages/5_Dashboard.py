@@ -149,7 +149,13 @@ if check_password():
     )
 
     # drawing map
-    color_palette = ["#E03849", "#FF7900", "#FFC818", "#46B5FF", "#0C75B6", "#18538E"]
+    direction   = outline.loc[outline["n"] == chart_n].direction.iloc[0]
+    color_codes = ["#E03849", "#FF7900", "#FFC818", "#46B5FF", "#0C75B6", "#18538E"]
+    if direction == "Negative":
+        color_palette = color_codes[::-1]
+    else:
+        color_palette = color_codes
+    
     fig = px.choropleth_mapbox(
         data4map,
         geojson      = eu_nuts,
