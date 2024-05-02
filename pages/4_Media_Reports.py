@@ -56,7 +56,7 @@ with country_selec:
     country = st.selectbox(
         "Select a country from the list below:",
         [
-            # "Austria",
+            "Austria",
             "Belgium",
             "Bulgaria",
             "Croatia",
@@ -76,7 +76,7 @@ with country_selec:
             "Luxembourg",
             "Malta",
             "Netherlands",
-            # "Poland",
+            "Poland",
             "Portugal",
             # "Romania",
             "Slovakia",
