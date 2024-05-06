@@ -47,6 +47,7 @@ if check_password():
     st.set_page_config(
         page_title = "Dashboard",
         page_icon  = "📶"
+        # layout="wide"
     )
 
     # Reading CSS styles
@@ -118,8 +119,19 @@ if check_password():
         .drop_duplicates(subset = "title")
         .title.to_list())
     )
+    country_focused = st.toggle(
+        "Would you like to focus on a single country?",
+        value = True
+    )
+    if country_focused == True:
+        country_select = st.multiselect(
+            "(Optional) Please select a country from the list below:",
+            (data_points
+            .drop_duplicates(subset = "country_name_ltn")
+            .country_name_ltn.to_list())
+        )
 
-    st.markdown("-----")
+    st.markdown("<br>", unsafe_allow_html = True)
 
     # Subsetting and preparing data
     chart_n = outline.loc[outline["title"] == chart, "n"].iloc[0]
@@ -134,21 +146,21 @@ if check_password():
         on  = "nuts_id"
     )
     data4map["value2plot"] = data4map["value2plot"]*100
+    if country_focused == True and len(country_select) > 0:
+        data4map = (
+            data4map.copy()
+            .loc[data4map["country_name_ltn"].isin(country_select)]
+            .reset_index()
+        )
 
     # Defining Annotations
     title    = outline.loc[outline["n"] == chart_n].title.iloc[0]
     subtitle = outline.loc[outline["n"] == chart_n].subtitle.iloc[0]
+    reportV  = outline.loc[outline["n"] == chart_n].reportValues.iloc[0]
 
-    st.markdown(
-        f"""
-        <h4 style='text-align: left;'>{title} (Regional level)</h4>
-        <h6 style='text-align: left;'><i>{subtitle}</i></h6>
-        <br>
-        """, 
-        unsafe_allow_html=True
-    )
+    # Defining tabs
+    tab1, tab2, tab3 = st.tabs(["Map Overview", "National Overview", "Detail"])
 
-    # Drawing map
     direction   = outline.loc[outline["n"] == chart_n].direction.iloc[0]
     color_codes = ["#E03849", "#FF7900", "#FFC818", "#46B5FF", "#0C75B6", "#18538E"]
     if direction == "Negative":
@@ -156,87 +168,165 @@ if check_password():
     else:
         color_palette = color_codes
 
-    fig = px.choropleth_mapbox(
-        data4map,
-        geojson      = eu_nuts,
-        locations    = "nuts_id",
-        featureidkey = "properties.polID",
-        mapbox_style = "carto-positron",
-        center       = {"lat": 52.250, "lon": 13.025},
-        custom_data  = ["nameSHORT", "value2plot"],
-        zoom         = 3,
-        color        = "value2plot",
-        color_continuous_scale = color_palette
-    )
-    fig.update_traces(
-        hovertemplate="%{customdata[0]}<br>Value: %{customdata[1]:.1f}%",
-        # marker = dict(
-        #     opacity = 0.5
-        # )
-    )
-    fig.update_layout(
-        margin = {"r":0,"t":0,"l":0,"b":0},
-        height = 800,
-        coloraxis_colorbar = dict(
-            title   = "Percentage(%)",
-            x       = 0,
-            xanchor ="left",
-            y       = -0.1,
-            yanchor = "bottom", 
-            orientation = "h", 
-        )
-    )
-    st.plotly_chart(fig)
+    # Map Oberview
+    with tab1:
 
-    st.markdown("-----")
-    st.markdown(
-        f"""
-        <h4 style='text-align: left;'>{title} (Country level)</h4>
-        <h6 style='text-align: left;'><i>{subtitle}</i></h6>
-        """, 
-        unsafe_allow_html=True
-    )
-
-    # Drawing Bar Chart
-    country_avgs = (
-        data4map
-        .groupby("country_name_ltn")
-        .agg({"value2plot": "mean"})
-        .sort_values(by = "value2plot", ascending = True)
-        .reset_index()
-    )
-    country_avgs["color"] = pd.cut(
-        country_avgs["value2plot"],
-        bins   = [-float("inf"), 15, 30, 45, 60, 75, float("inf")],
-        labels = color_palette
-    )
-    bars = px.bar(
-        country_avgs, 
-        x = "value2plot", 
-        y = "country_name_ltn",
-        color = "color", 
-        orientation = "h",
-        custom_data = ["country_name_ltn", "value2plot"],
-        color_discrete_map = {
-            "#E03849": "#E03849", 
-            "#FF7900": "#FF7900", 
-            "#FFC818": "#FFC818", 
-            "#46B5FF": "#46B5FF", 
-            "#0C75B6": "#0C75B6", 
-            "#18538E": "#18538E"
-        }
-    )
-    bars.update_traces(
-        hovertemplate="%{customdata[0]}<br>Value: %{customdata[1]:.1f}%"
-    )
-    bars.update_layout(
-        xaxis_title = "Percentage (%)",
-        yaxis_title = None,
-        showlegend  = False,
-        margin = {"r":0,"t":0,"l":0,"b":0},
-        xaxis  = dict(
-            range = [0, 100],
-            dtick = 20
+        st.markdown(
+            f"""
+            <h4 style='text-align: left;'>{title} (Regional level)</h4>
+            <h6 style='text-align: left;'><i>{subtitle}</i></h6>
+            <p style='text-align: right;'><i>Reported values: {reportV}</i></p>
+            <br>
+            """, 
+            unsafe_allow_html=True
         )
-    )
-    st.plotly_chart(bars)
+
+        # Drawing map
+        fig = px.choropleth_mapbox(
+            data4map,
+            geojson      = eu_nuts,
+            locations    = "nuts_id",
+            featureidkey = "properties.polID",
+            mapbox_style = "carto-positron",
+            center       = {"lat": 52.250, "lon": 13.025},
+            custom_data  = ["nameSHORT", "value2plot"],
+            zoom         = 3,
+            color        = "value2plot",
+            color_continuous_scale    = color_palette,
+            color_continuous_midpoint = 50
+        )
+        fig.update_traces(
+            hovertemplate="%{customdata[0]}<br>Value: %{customdata[1]:.1f}%",
+            # marker = dict(
+            #     opacity = 0.5
+            # )
+        )
+        fig.update_layout(
+            # margin = {"r":0,"t":0,"l":0,"b":0},
+            height = 800,
+            coloraxis_colorbar = dict(
+                title   = "Percentage(%)",
+                x       = 0,
+                xanchor ="left",
+                y       = 1.1,
+                yanchor = "top", 
+                orientation = "h", 
+            )
+        )
+        st.plotly_chart(fig)
+
+    with tab2:
+        st.markdown(
+            f"""
+            <h4 style='text-align: left;'>{title} (Country level)</h4>
+            <h6 style='text-align: left;'><i>{subtitle}</i></h6>
+            <p style='text-align: right;'><i>Reported values: {reportV}</i></p>
+            """, 
+            unsafe_allow_html=True
+        )
+
+        # Drawing Bar Chart
+        country_avgs = (
+            data4map
+            .groupby("country_name_ltn")
+            .agg({"value2plot": "mean"})
+            .sort_values(by = "value2plot", ascending = True)
+            .reset_index()
+        )
+        country_avgs["color"] = pd.cut(
+            country_avgs["value2plot"],
+            bins   = [-float("inf"), 15, 30, 45, 60, 75, float("inf")],
+            labels = color_palette
+        )
+        bars = px.bar(
+            country_avgs, 
+            x = "value2plot", 
+            y = "country_name_ltn",
+            color = "value2plot", 
+            orientation = "h",
+            custom_data = ["country_name_ltn", "value2plot"],
+            # color_discrete_map = {
+            #     "#E03849": "#E03849", 
+            #     "#FF7900": "#FF7900", 
+            #     "#FFC818": "#FFC818", 
+            #     "#46B5FF": "#46B5FF", 
+            #     "#0C75B6": "#0C75B6", 
+            #     "#18538E": "#18538E"
+            # },
+            color_continuous_scale = color_palette,
+            color_continuous_midpoint = 50
+        )
+        bars.update_traces(
+            hovertemplate="%{customdata[0]}<br>Value: %{customdata[1]:.1f}%"
+        )
+        bars.update_layout(
+            xaxis_title = "Percentage (%)",
+            yaxis_title = None,
+            showlegend  = False,
+            margin = {"r":0,"t":0,"l":0,"b":0},
+            xaxis  = dict(
+                range = [0, 100],
+                dtick = 20
+            ),
+            coloraxis_colorbar = dict(
+                title   = "Percentage(%)",
+                # x       = 0,
+                # xanchor = "left",
+                y       = 1.2,
+                yanchor = "top", 
+                orientation = "h", 
+            )
+        )
+        st.plotly_chart(bars)
+
+    with tab3:
+        st.markdown(
+            f"""
+            <h4 style='text-align: left;'>{title} (Regional level)</h4>
+            <h6 style='text-align: left;'><i>{subtitle}</i></h6>
+            <p style='text-align: right;'><i>Reported values: {reportV}</i></p>
+            <br>
+            """, 
+            unsafe_allow_html=True
+        )
+        sorting = st.selectbox(
+            "Sort table values based on:",
+            ["Country/Region", "Percentage (Descending)", "Percentage (Ascending)"]
+        )
+        if sorting == "Country/Region":
+            svar = ["country_name_ltn", "nuts_id"]
+            asc  = True
+        if sorting == "Percentage (Descending)":
+            svar = ["value2plot"]
+            asc  = False
+        if sorting == "Percentage (Ascending)":
+            svar = ["value2plot"]
+            asc  = True
+        data4table = (
+            data4map
+            .loc[:,["country_name_ltn", "nameSHORT", "nuts_id", "value2plot"]]
+            .sort_values(svar, ascending = asc)
+            .reset_index(drop = True)
+        )
+        data4table.index += 1
+        st.markdown(
+            """
+            <style>
+            .stDataFrame {
+                width: 100%;
+            }
+            </style>
+            """,
+            unsafe_allow_html = True
+        )
+        st.dataframe(
+            data4table,
+            column_config={
+                "value2plot": st.column_config.ProgressColumn(
+                    "Percentage (%)",
+                    format    = "%1.1f",
+                    min_value = 0,
+                    max_value = 100,
+                ),
+            },
+        )
