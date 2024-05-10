@@ -127,6 +127,13 @@ if st.session_state["country_track"]:
             summaries were produced using AI</b>, after the model was presented with the project's theoretical framework. Therefore, 
             please read them carefully.
             </p>
+
+            <p class='jtext'>
+            For most countries, the scale of information is massive and it can be overwhelming. Therefore, we suggest reading the general 
+            summaries per pillar to identify the relevant issues of interest. Once you have identified the relevant issues, please use
+            keywords to search for those specific issues using the <strong style="color:#003249">Search Engine</strong> tab. As a general
+            rule, please use specific keywords that can lead you to the desired issues of interest.
+            </p>
             """,
             unsafe_allow_html = True
         )
@@ -142,13 +149,6 @@ if st.session_state["country_track"]:
                     regarding the news articles extracted for <strong style="color:#003249">{country}, {tab_name}</strong>.
                     The model was told to keep a maximum of 10 events/issues for every 100,0000 words. Therefore, the 
                     summaries displayed below might vary in extention <i>depending on the extent of information extracted for each country</i>.
-                    </p>
-
-                    <p class='jtext'>
-                    For most countries, the scale of information is massive and it can be overwhelming. Therefore, we suggest reading the general 
-                    summaries per pillar to identify the relevant issues of interest. Once you have identified the relevant issues, please use
-                    keywords to search for those specific issues using the <strong style="color:#003249">Search Engine</strong> tab. As a general
-                    rule, please use specific keywords that can lead you to the desired issues of interest.
                     </p>
                     """,
                     unsafe_allow_html = True
