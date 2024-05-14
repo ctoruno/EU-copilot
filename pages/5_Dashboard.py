@@ -245,14 +245,6 @@ if check_password():
             color = "value2plot", 
             orientation = "h",
             custom_data = ["country_name_ltn", "value2plot"],
-            # color_discrete_map = {
-            #     "#E03849": "#E03849", 
-            #     "#FF7900": "#FF7900", 
-            #     "#FFC818": "#FFC818", 
-            #     "#46B5FF": "#46B5FF", 
-            #     "#0C75B6": "#0C75B6", 
-            #     "#18538E": "#18538E"
-            # },
             color_continuous_scale = color_palette,
             color_continuous_midpoint = 50
         )
