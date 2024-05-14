@@ -145,13 +145,37 @@ if check_password():
         how = "left",
         on  = "nuts_id"
     )
+    data4avgs = data4map.copy()
     data4map["value2plot"] = data4map["value2plot"]*100
+    country_avgs = (
+        data4map
+        .groupby("country_name_ltn")
+        .agg({"value2plot": "mean"})
+        .sort_values(by = "value2plot", ascending = True)
+        .reset_index()
+    )
+    eu_avg = (
+        country_avgs.copy()
+        .assign(country_name_ltn = "European Union")
+        .groupby("country_name_ltn")
+        .agg({"value2plot": "mean"})
+        .reset_index()
+    )
     if country_focused == True and len(country_select) > 0:
         data4map = (
             data4map.copy()
             .loc[data4map["country_name_ltn"].isin(country_select)]
             .reset_index()
         )
+        country_avgs = (
+            country_avgs.copy()
+            .loc[country_avgs["country_name_ltn"].isin(country_select)]
+            .reset_index()
+        )
+    data4bars =(
+        pd.concat([country_avgs, eu_avg], ignore_index = True)
+        .sort_values(by = "value2plot", ascending = True)
+    )
 
     # Defining Annotations
     title    = outline.loc[outline["n"] == chart_n].title.iloc[0]
@@ -161,12 +185,14 @@ if check_password():
     # Defining tabs
     tab1, tab2, tab3 = st.tabs(["Map Overview", "National Overview", "Detail"])
 
-    direction   = outline.loc[outline["n"] == chart_n].direction.iloc[0]
-    color_codes = ["#E03849", "#FF7900", "#FFC818", "#46B5FF", "#0C75B6", "#18538E"]
+    direction    = outline.loc[outline["n"] == chart_n].direction.iloc[0]
+    color_codes  = ["#E03849", "#FF7900", "#FFC818", "#46B5FF", "#0C75B6", "#18538E"]
+    value_breaks = [0.00, 0.20, 0.40, 0.60, 0.80, 1.00]
     if direction == "Negative":
-        color_palette = color_codes[::-1]
+        ordered_colors = color_codes[::-1]
     else:
-        color_palette = color_codes
+        ordered_colors = color_codes
+    color_palette = [[color, value] for color, value in zip(value_breaks, ordered_colors)]
 
     # Map Oberview
     with tab1:
@@ -192,6 +218,7 @@ if check_password():
             custom_data  = ["nameSHORT", "value2plot"],
             zoom         = 3,
             color        = "value2plot",
+            range_color  = [0,100],
             color_continuous_scale    = color_palette,
             color_continuous_midpoint = 50
         )
@@ -211,6 +238,8 @@ if check_password():
                 y       = 1.1,
                 yanchor = "top", 
                 orientation = "h", 
+                tickvals = [0, 20, 40, 60, 80, 100],
+                ticktext = ["0", "20", "40", "60", "80", "100"]
             )
         )
         st.plotly_chart(fig)
@@ -226,25 +255,14 @@ if check_password():
         )
 
         # Drawing Bar Chart
-        country_avgs = (
-            data4map
-            .groupby("country_name_ltn")
-            .agg({"value2plot": "mean"})
-            .sort_values(by = "value2plot", ascending = True)
-            .reset_index()
-        )
-        country_avgs["color"] = pd.cut(
-            country_avgs["value2plot"],
-            bins   = [-float("inf"), 15, 30, 45, 60, 75, float("inf")],
-            labels = color_palette
-        )
         bars = px.bar(
-            country_avgs, 
+            data4bars, 
             x = "value2plot", 
             y = "country_name_ltn",
             color = "value2plot", 
-            orientation = "h",
-            custom_data = ["country_name_ltn", "value2plot"],
+            orientation  = "h",
+            range_color  = [0,100],
+            custom_data  = ["country_name_ltn", "value2plot"],
             color_continuous_scale = color_palette,
             color_continuous_midpoint = 50
         )
@@ -266,7 +284,9 @@ if check_password():
                 # xanchor = "left",
                 y       = 1.2,
                 yanchor = "top", 
-                orientation = "h", 
+                orientation = "h",
+                tickvals = [0, 20, 40, 60, 80, 100],
+                ticktext = ["0", "20", "40", "60", "80", "100"]
             )
         )
         st.plotly_chart(bars)
