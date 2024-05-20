@@ -11,6 +11,7 @@ import pandas as pd
 import geopandas as gpd
 import streamlit as st
 import plotly.express as px
+import tools.viz_tools as viz
 
 # Defining a function to check for password
 def check_password():
@@ -160,105 +161,98 @@ if check_password():
             .reset_index()
         )
 
+        country_data = pd.merge(
+            (
+                data_points.copy()
+                .loc[data_points["level"] == "national"]
+            ),
+            (
+                outline[["chapter", "section", "subsection", "n", "reportValues", "direction", "title", "subtitle"]]
+            ),
+            how = "left",
+            left_on  = "chart",
+            right_on = "n"
+        )
+        country_data["value_realign"] = country_data.apply(lambda row: pd.Series(realign_data(
+                    row["value2plot"], 
+                    row["direction"], 
+                )), axis = 1)
+
         # Drawing Bar Charts
         color_codes   = ["#E03849", "#FF7900", "#FFC818", "#46B5FF", "#0C75B6", "#18538E"]
         value_breaks  = [0.00, 0.20, 0.40, 0.60, 0.80, 1.00]
         color_palette = [[color, value] for color, value in zip(value_breaks, color_codes)]
-        def genBars(data):
-            fig = px.bar(
-                data, 
-                x = "value_realign", 
-                y = "title",
-                color = "value_realign", 
-                orientation  = "h",
-                range_color  = [0,100],
-                custom_data  = ["title", "value_realign", "direction"],
-                color_continuous_scale = color_palette,
-                color_continuous_midpoint = 50
-            )
-            fig.update_traces(
-                hovertemplate = "%{customdata[0]}<br>Value: %{customdata[1]:.1f}%<br>Direction: %{customdata[2]}",
-                marker = dict(showscale = False)
-            )
-            fig.update(
-                layout_coloraxis_showscale=False
-            )
-            fig.update_layout(
-                xaxis_title = "Percentage (%)",
-                yaxis_title = None,
-                showlegend  = False,
-                margin = {"r":0,"t":0,"l":0,"b":0},
-                xaxis  = dict(
-                    range = [0, 100],
-                    dtick = 20
-                ),
-                yaxis = dict(
-                    tickmode = "linear"
-                )
-            )
-            return fig
-        
-        def genMetrics(n, d = ""):
-            subsection = subsection_summary.iloc[n]["subsection"]
-            avg_value  = round(subsection_summary.iloc[n]["average_value"], 1)
-            card = st.metric(f":{d}[{subsection}]", f"Avg: {avg_value}")
-            return card
         
         st.markdown(
             f"""
+            <h4>How's the region performing?</h4>
             <p class='jtext'>
-                In general terms, the data collected in the European Union indicates that the region is 
-                performing quite well in the following three sub-topics:
+                In a nutshell, the data collected in the European Union indicates that the region is 
+                performing quite well in the following four thematic topics (sub-sections):
             </p>
             """, 
             unsafe_allow_html=True
         )
-        col = st.columns(3)
-        for metric in [0, 1, 2]:
+        col = st.columns(2)
+        for metric in [0, 1]:
             with col[metric]:
-                genMetrics(metric, d = "green")
+                viz.genMetrics(metric, df = subsection_summary, d = "green")
+        col = st.columns(2)
+        for metric in [2, 3]:
+            with col[metric-2]:
+                viz.genMetrics(metric, df = subsection_summary, d = "green")
         st.markdown(
             f"""
             <p class='jtext'>
                 On the other hand, the data also indicates that the region is performing quite low in 
-                the following three sub-topics: 
+                the following four topics (sub-sections): 
             </p>
             """, 
             unsafe_allow_html=True
         )
-        col = st.columns(3)
-        for metric in [-1, -2, -3]:
+        col = st.columns(2)
+        for metric in [-1, -2]:
             with col[abs(metric)-1]:
-                genMetrics(metric, d = "red")
+                viz.genMetrics(metric, df = subsection_summary, d = "red")
+        col = st.columns(2)
+        for metric in [-3, -4]:
+            with col[abs(metric)-3]:
+                viz.genMetrics(metric, df = subsection_summary, d = "red")
+        with st.expander("Technical note here"):
+            st.markdown(
+                f"""
+                <p class='jtext'>
+                    To arrive to the values shown above, the following steps were taken:
+                    <ol>
+                        <li>
+                            The responses for individual respondents were aggregated using simple averages to
+                            get a sub-national average for individual indicators.
+                        </li>
+                        <li>
+                            Sub-national values were aggregated to get a national average. The total population of
+                            each region was used as a weight during this step.
+                        </li>
+                        <li>
+                            National values were aggregated to get a regional (EU) average using a simple mean.
+                        </li>
+                        <li>
+                            Regional (EU) values were grouped into thematic groups (topics) and the average percentages
+                            within each groups are the ones shown above.
+                        </li>
+                    </ol>
+                </p>
+                <p class='jtext'>
+                    Additionally, the indicators were re-aligned so higher values have a positive impact in the 
+                    Rule of Law, while lower values reflect negative impacts on the Rule of Law. You can take a 
+                    look at the full list of results in the table below:
+                </p>
+                """, 
+                unsafe_allow_html=True
+            )
         st.markdown(
             f"""
             <p class='jtext'>
-                To arrive to the values shown above, the following steps were taken:
-                <ol>
-                    <li>
-                        The responses for individual respondents were aggregated using simple averages to
-                        get a sub-national average for individual indicators.
-                    </li>
-                    <li>
-                        Sub-national values were aggregated to get a national average. The total population of
-                        each region was used as a weight during this step.
-                    </li>
-                    <li>
-                        National values were aggregated to get a regional (EU) average using a simple mean.
-                    </li>
-                    <li>
-                        Regional (EU) values were grouped into thematic groups and the average percentages
-                        within each groups are the ones shown above.
-                    </li>
-                </ol>
-            </p>
-            <p class='jtext'>
-                Additionally, the indicators were re-aligned so higher values have a positive impact in the 
-                Rule of Law, while lower values reflect negative impacts on the Rule of Law.
-            </p>
-            <p class='jtext'>
-                You can take a look at the complete list of topics and their respective average percentages
-                in the table below:
+                You can take a look at the full list of results in the table below:
             </p>
             """, 
             unsafe_allow_html=True
@@ -267,22 +261,16 @@ if check_password():
             st.dataframe(subsection_summary.to_records(index=False))
         st.markdown(
             f"""
+            <h4>What about specific indicators?</h4>
             <p class='jtext'>
-                We also present a list of the top/bottom 15 indicators for the region, regardless of 
-                their thematic grouping:
+                Regardless of their associated topic, there is a handful of indicators in which the region, 
+                on average, is showing a top performance:
             </p>
-            <br>
-            """, 
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            f"""
             <h4 style='text-align: left;'>Top 15 Indicators in the Region</h4>
-            <h6 style='text-align: left;'><i>Percentages</i></h6>
             """, 
             unsafe_allow_html=True
         )
-        top_15 = genBars(eu_data.head(15).sort_values(by = "value_realign", ascending = True))
+        top_15 = viz.genBars(eu_data.head(15).sort_values(by = "value_realign", ascending = True), cpal = color_palette)
         st.plotly_chart(top_15, config = {"displayModeBar": False})
         st.markdown("---")
         st.markdown(
@@ -304,12 +292,15 @@ if check_password():
         st.markdown("---")
         st.markdown(
             f"""
+            <p class='jtext'>
+                Similarly, there is a set of indicators in which the region shows very low averages, most of 
+                them related to the topics highlighted above:
+            </p>
             <h4 style='text-align: left;'>Bottom 15 Indicators in the Region</h4>
-            <h6 style='text-align: left;'><i>Percentages</i></h6>
             """, 
             unsafe_allow_html=True
         )
-        bot_15 = genBars(eu_data.tail(15).sort_values(by = "value_realign", ascending = True))
+        bot_15 = viz.genBars(eu_data.tail(15).sort_values(by = "value_realign", ascending = True),  cpal = color_palette)
         st.plotly_chart(bot_15, config = {"displayModeBar": False})
         st.markdown("---")
         st.markdown(
@@ -329,11 +320,74 @@ if check_password():
             unsafe_allow_html=True
         )
         st.markdown("---")
+        st.markdown(
+            f"""
+            <p class='jtext'>
+                You can take a look at the complete list of topics and their respective average percentages
+                in the table below:
+            </p>
+            """, 
+            unsafe_allow_html=True
+        )
         st.dataframe(
             eu_data[["country_name_ltn", "subsection", "title", "value2plot", "direction", "value_realign", "reportValues"]]
             .sort_values("value_realign")
             .to_records(index=False)
         )
+        st.markdown(
+            f"""
+            <h4>Do specific results deviate a lot from these averages?</h4>
+            <p class='jtext'>
+                Yes, they do. To be more specific. Looking at the average performance of the region is not recommended because 
+                indicators present some important variation across countries and, more importantly, even across
+                indicators associated to the same topics (sub-section).
+            </p>
+            <p class='jtext'>
+                For example, below, I'm presenting the comparison between Denmark and Hungary across all topics covered in
+                our Report. There is a clear difference between the performance of both countries in topics such as Freedom of 
+                Expression and Judicial Independence. However, if we take a look at the indicators within the 
+                Perceptions on the Accesibility of Civil Justice, Denmark alone has some quite variation. From only a 27% of
+                the sample agreeing that there is access to affordable DRM to more than 60% agreeing that the Danish Civil Justice
+                provides an equal and fair treatment.
+            </p>
+            <p class='jtext'>
+                Feel free to play with the data below:
+            </p>
+            """, 
+            unsafe_allow_html=True
+        )
+        country_select = st.multiselect(
+            "Please select a country(-ies) from the list below:",
+            (data_points
+            .drop_duplicates(subset = "country_name_ltn")
+            .country_name_ltn.to_list()),
+            default = ["Denmark", "Hungary"]
+        )
+        fig = px.strip(
+            country_data, 
+            y = "subsection", 
+            x = "value_realign", 
+            stripmode   = "group",
+            color       = "country_name_ltn", 
+            custom_data = ["title", "value_realign", "country_name_ltn"]
+        )
+        fig.update_traces(
+            hovertemplate="%{customdata[2]}<br>%{customdata[0]}<br>Value: %{customdata[1]:.1f}%",
+        )
+        for trace in fig.data:
+            trace.update(opacity = 0.05)
+        fig.for_each_trace(
+            lambda trace: trace.update(opacity=1.0) if trace.name in country_select else None
+        )
+        fig.update_layout(
+            height = 1100,
+            xaxis_title = None,
+            yaxis_title = None,
+            template    = "plotly_white",
+            showlegend  = False,
+        )
+        st.plotly_chart(fig, config = {"displayModeBar": False})
+
     with countrytab:
         st.markdown("COMING SOON. Bridgerton - Season 3 - is delaying the code for this tab")
 
