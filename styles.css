@@ -3,6 +3,14 @@
     text-justify: auto;
     color: #393B3B;
 }
+.footnote {
+    font-size: 14px;
+    text-align: justify;
+    text-justify: auto;
+}
+.css-1xarl3l{
+    font-size: 1rem;
+}
 
 .vdesc {
     text-align: justify;
