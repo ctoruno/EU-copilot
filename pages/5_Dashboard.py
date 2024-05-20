@@ -332,7 +332,7 @@ if viz.check_password():
         country_select = st.multiselect(
             "Please select a country(-ies) from the list below:",
             (data_points
-             .loc[data_points["level"] == "national"]
+            #  .loc[data_points["level"] == "national"]
             .drop_duplicates(subset = "country_name_ltn")
             .country_name_ltn.to_list()),
             default = ["Denmark", "Hungary"]
