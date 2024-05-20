@@ -4,7 +4,7 @@ Module Name:    Dashboard
 Author:         Carlos Alberto Toruño Paniagua
 Date:           April 29th, 2024
 Description:    This module contains the code of the Dashboard tab for the EU Copilot App
-This version:   April 29th, 2024
+This version:   May 20th, 2024
 """
 
 import pandas as pd
