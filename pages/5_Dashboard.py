@@ -338,12 +338,12 @@ if check_password():
             f"""
             <h4>Do specific results deviate a lot from these averages?</h4>
             <p class='jtext'>
-                Yes, they do. To be more specific. Looking at the average performance of the region is not recommended because 
+                Yes, they do. To be more specific, looking at the average performance of the region is not recommended because 
                 indicators present some important variation across countries and, more importantly, even across
                 indicators associated to the same topics (sub-section).
             </p>
             <p class='jtext'>
-                For example, below, I'm presenting the comparison between Denmark and Hungary across all topics covered in
+                Below, I'm presenting the comparison between Denmark and Hungary across all topics covered in
                 our Report. There is a clear difference between the performance of both countries in topics such as Freedom of 
                 Expression and Judicial Independence. However, if we take a look at the indicators within the 
                 Perceptions on the Accesibility of Civil Justice, Denmark alone has some quite variation. From only a 27% of
