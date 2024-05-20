@@ -389,7 +389,7 @@ if check_password():
         st.plotly_chart(fig, config = {"displayModeBar": False})
 
     with countrytab:
-        st.markdown("COMING SOON. Bridgerton - Season 3 - is delaying the code for this tab")
+        st.markdown("COMING SOON")
 
     with vartab:
 
