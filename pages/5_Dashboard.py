@@ -627,6 +627,9 @@ if viz.check_password():
                 <li>
                     <b>T4</b>: Based on cultural divisions. CZ01+CZ02, CZ03+CZ04+CZ05, CZ06, CZ07+CZ08.
                 </li>
+                <li>
+                    <b>T5</b>: Based on both geographic and cultural features. CZ01, CZ02+CZ03+CZ04, CZ05+CZ06, CZ07+CZ08.
+                </li>
             </ul>
             """, 
             unsafe_allow_html=True
@@ -640,8 +643,8 @@ if viz.check_password():
 
         groupings = st.multiselect(
             "Which grouping options do you want to visualize and compare",
-            ["T1", "T2", "T3", "T4"],
-            default = ["T1", "T3"],
+            ["T1", "T2", "T3", "T4", "T5"],
+            default = ["T1", "T5"],
             max_selections = 2
         )
         stat = st.selectbox(
