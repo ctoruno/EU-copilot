@@ -78,4 +78,61 @@ def genMetrics(n, df, d = ""):
     card = st.metric(f":{d}[{subsection}]", f"Avg: {avg_value}")
     return card
 
-# def genBees
+def genBees(country_data, country_select):
+    fig = px.strip(
+        country_data, 
+        y = "subsection", 
+        x = "value_realign", 
+        stripmode   = "group",
+        color       = "country_name_ltn", 
+        custom_data = ["title", "value_realign", "country_name_ltn"]
+    )
+    fig.update_traces(
+        hovertemplate="%{customdata[2]}<br>%{customdata[0]}<br>Value: %{customdata[1]:.1f}%",
+    )
+    for trace in fig.data:
+        trace.update(opacity = 0.05)
+    fig.for_each_trace(
+        lambda trace: trace.update(opacity=1.0) if trace.name in country_select else None
+    )
+    fig.update_layout(
+        height = 1100,
+        xaxis_title = None,
+        yaxis_title = None,
+        template    = "plotly_white",
+        showlegend  = False,
+    )
+    return fig
+
+def genDots(data, topic, groupings, stat):
+    if stat == "Data Points":
+        xaxis = "value2plot"
+    if stat == "Deviations from National Average":
+        xaxis = "dev"
+    
+    grouping_pattern = "|".join(groupings)
+
+    subset4charts = (
+        data.copy()
+        .loc[(data["topic"] == topic) & (data["region"].str.contains(grouping_pattern))]
+    )
+    fig = px.scatter(
+        subset4charts,
+        x = xaxis,
+        y = "title",
+        title = topic,
+        color = "region",
+        color_discrete_sequence=px.colors.qualitative.G10,
+        facet_col="grouping",
+        facet_col_spacing = 0.04,
+        category_orders={"grouping": groupings}
+    )
+    fig.update_layout(
+        height = 400,
+        xaxis_title = None,
+        yaxis_title = None,
+        template    = "plotly_white",
+        showlegend  = False,
+    )
+
+    return fig

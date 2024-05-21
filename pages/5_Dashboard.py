@@ -97,7 +97,7 @@ if viz.check_password():
     )
 
     # Defining tabs (Indicator Level)
-    eutab, countrytab, vartab = st.tabs(["EU Overview", "Country Profile", "Indicator Level"])
+    eutab, countrytab, vartab, czechia_tab = st.tabs(["EU Overview", "Country Profile", "Indicator Level", "Czechia"])
 
     with eutab:
 
@@ -337,30 +337,8 @@ if viz.check_password():
             .country_name_ltn.to_list()),
             default = ["Denmark", "Hungary"]
         )
-        fig = px.strip(
-            country_data, 
-            y = "subsection", 
-            x = "value_realign", 
-            stripmode   = "group",
-            color       = "country_name_ltn", 
-            custom_data = ["title", "value_realign", "country_name_ltn"]
-        )
-        fig.update_traces(
-            hovertemplate="%{customdata[2]}<br>%{customdata[0]}<br>Value: %{customdata[1]:.1f}%",
-        )
-        for trace in fig.data:
-            trace.update(opacity = 0.05)
-        fig.for_each_trace(
-            lambda trace: trace.update(opacity=1.0) if trace.name in country_select else None
-        )
-        fig.update_layout(
-            height = 1100,
-            xaxis_title = None,
-            yaxis_title = None,
-            template    = "plotly_white",
-            showlegend  = False,
-        )
-        st.plotly_chart(fig, config = {"displayModeBar": False})
+        bees = viz.genBees(country_data = country_data, country_select = country_select)
+        st.plotly_chart(bees, config = {"displayModeBar": False})
 
     with countrytab:
         st.markdown("COMING SOON")
@@ -617,3 +595,85 @@ if viz.check_password():
                     ),
                 },
             )
+    with czechia_tab:
+
+        st.markdown(
+            f"""
+            <h3 style='text-align: left;'>Does the regional grouping in Czechia affect the main findings?</h3>
+            <p class='jtext'>
+                This tab is specially dedicated to answer that question. Here you can compare the data points for 
+                different grouping options and see how much do the resulting data points change. Take into account that
+                the resulng regions are not comparable across grouping options. Therefore, you need to focus on how much
+                do the distribution of data points change between options. 
+            </p>
+            <p class='jtext'>
+                You can also visualize the deviations from the national average. Given that the national average is fixed,
+                no matter which grouping option are you working, the deviations will give a different approach to answer
+                the question by using a fixed benchmark.
+            </p>
+            <p class='jtext'>
+                Available options:
+            </p>
+            <ul>
+                <li>
+                    <b>T1</b>: Based on geography/population. CZ01+CZ02, CZ03+CZ04, CZ05+CZ06, CZ07+CZ08.
+                </li>
+                <li>
+                    <b>T2</b>: Based on geography/population. CZ01+CZ02, CZ03+CZ06, CZ04+CZ05, CZ07+CZ08.
+                </li>
+                <li>
+                    <b>T3</b>: Based on cultural divisions. CZ01+CZ02, CZ03+CZ04+CZ05, CZ06+CZ07, CZ08.
+                </li>
+                <li>
+                    <b>T4</b>: Based on cultural divisions. CZ01+CZ02, CZ03+CZ04+CZ05, CZ06, CZ07+CZ08.
+                </li>
+            </ul>
+            """, 
+            unsafe_allow_html=True
+        )
+
+        topics = [
+            "Trust", "Corruption Perceptions", "Justice System Evaluation", "Law Enforcement Performance",
+            "Criminal Justice Performance", "Perceptions on Authoritarian Behavior", "Civic Participation A", 
+            "Civic Participation B", "Corruption Perceptions"
+        ]
+
+        groupings = st.multiselect(
+            "Which grouping options do you want to visualize and compare",
+            ["T1", "T2", "T3", "T4"],
+            default = ["T1", "T3"],
+            max_selections = 2
+        )
+        stat = st.selectbox(
+            "What statistic would you like to visualize?",
+            ["Data Points", "Deviations from National Average"],
+            index = 0
+        )
+
+        czechia_data = pd.merge(
+            pd.read_csv("inputs/cpoints.csv"),
+            outline[["n", "topic", "reportValues", "title", "subtitle", "direction"]],
+            how      = "left",
+            left_on  = "chart",
+            right_on = "n"
+        )
+        czechia_data = czechia_data[czechia_data["topic"].isin(topics)]
+        czechia_data["title"] = czechia_data["title"].str.replace(r"^Graph \d+\. ", "", regex=True)
+        czechia_data["grouping"] = czechia_data["region"].str[:2]
+
+
+        for topic in topics:
+            with st.empty():
+                st.markdown(
+                    f"""
+                    <h3 style='text-align: left;'>{topic}</h3>
+                    """, 
+                    unsafe_allow_html=True
+                )
+                dotties = viz.genDots(
+                    data = czechia_data, 
+                    topic = topic, 
+                    groupings = groupings, 
+                    stat = stat
+                )
+                st.plotly_chart(dotties)
