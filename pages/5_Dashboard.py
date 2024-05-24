@@ -4,22 +4,23 @@ Module Name:    Dashboard
 Author:         Carlos Alberto Toruño Paniagua
 Date:           April 29th, 2024
 Description:    This module contains the code of the Dashboard tab for the EU Copilot App
-This version:   May 20th, 2024
+This version:   May 24th, 2024
 """
 
 import pandas as pd
 import geopandas as gpd
 import streamlit as st
 import plotly.express as px
-import tools.viz_tools as viz
+from tools import viz_tools as viz
+from tools import passcheck
 
-if viz.check_password():
+if passcheck.check_password():
 
     # Page config
     st.set_page_config(
         page_title = "Dashboard",
-        page_icon  = "📶"
-        # layout="wide"
+        page_icon  = "📶",
+        # layout     = "wide"
     )
 
     # Reading CSS styles
@@ -241,7 +242,11 @@ if viz.check_password():
             """, 
             unsafe_allow_html=True
         )
-        top_15 = viz.genBars(eu_data.head(15).sort_values(by = "value_realign", ascending = True), cpal = color_palette)
+        top_15 = viz.genBars(
+            data  = eu_data.head(15).sort_values(by = "value_realign", ascending = True), 
+            cpal  = color_palette,
+            level = "EU"
+        )
         st.plotly_chart(top_15, config = {"displayModeBar": False})
         st.markdown("---")
         st.markdown(
@@ -271,7 +276,11 @@ if viz.check_password():
             """, 
             unsafe_allow_html=True
         )
-        bot_15 = viz.genBars(eu_data.tail(15).sort_values(by = "value_realign", ascending = True),  cpal = color_palette)
+        bot_15 = viz.genBars(
+            data  = eu_data.tail(15).sort_values(by = "value_realign", ascending = True),  
+            cpal  = color_palette,
+            level = "EU"
+        )
         st.plotly_chart(bot_15, config = {"displayModeBar": False})
         st.markdown("---")
         st.markdown(
@@ -331,12 +340,27 @@ if viz.check_password():
         )
         country_select = st.multiselect(
             "Please select a country(-ies) from the list below:",
-            (data_points
-            #  .loc[data_points["level"] == "national"]
-            .drop_duplicates(subset = "country_name_ltn")
-            .country_name_ltn.to_list()),
+            (
+                data_points
+                .loc[data_points["level"] == "national"]
+                .drop_duplicates(subset = "country_name_ltn")
+                .country_name_ltn.to_list()
+            ),
             default = ["Denmark", "Hungary"]
         )
+        topic_focused = st.multiselect(
+            "(Optional) Let's narrow the data to the following topics:",
+            (
+                country_data
+                .loc[country_data["level"] == "national"]
+                .drop_duplicates(subset = "subsection")
+                .subsection.to_list()
+            )
+        )
+        if len(topic_focused) > 0:
+            country_data = (
+                country_data.loc[country_data["subsection"].isin(topic_focused)]
+            ) 
         bees = viz.genBees(country_data = country_data, country_select = country_select)
         st.plotly_chart(bees, config = {"displayModeBar": False})
 
@@ -421,7 +445,7 @@ if viz.check_password():
         reportV  = outline.loc[outline["n"] == chart_n].reportValues.iloc[0]
 
         # Defining tabs (Indicator Level)
-        tab1, tab2, tab3 = st.tabs(["Sub-national Summary", "National Synopsis", "Detail"])
+        map_tab, bars_tab, table_tab = st.tabs(["Sub-national Summary", "National Synopsis", "Detail"])
 
         direction    = outline.loc[outline["n"] == chart_n].direction.iloc[0]
         color_codes  = ["#E03849", "#FF7900", "#FFC818", "#46B5FF", "#0C75B6", "#18538E"]
@@ -432,9 +456,7 @@ if viz.check_password():
             ordered_colors = color_codes
         color_palette = [[color, value] for color, value in zip(value_breaks, ordered_colors)]
 
-        # Map Oberview
-        with tab1:
-
+        with map_tab:
             st.markdown(
                 f"""
                 <h4 style='text-align: left;'>{title} (Regional level)</h4>
@@ -444,43 +466,8 @@ if viz.check_password():
                 """, 
                 unsafe_allow_html=True
             )
-
-            # Drawing map
-            fig = px.choropleth_mapbox(
-                data4map,
-                geojson      = eu_nuts,
-                locations    = "nuts_id",
-                featureidkey = "properties.polID",
-                mapbox_style = "carto-positron",
-                center       = {"lat": 52.250, "lon": 13.025},
-                custom_data  = ["nameSHORT", "value2plot"],
-                zoom         = 3,
-                color        = "value2plot",
-                range_color  = [0,100],
-                color_continuous_scale    = color_palette,
-                color_continuous_midpoint = 50
-            )
-            fig.update_traces(
-                hovertemplate="%{customdata[0]}<br>Value: %{customdata[1]:.1f}%",
-                # marker = dict(
-                #     opacity = 0.5
-                # )
-            )
-            fig.update_layout(
-                # margin = {"r":0,"t":0,"l":0,"b":0},
-                height = 800,
-                coloraxis_colorbar = dict(
-                    title   = "Percentage(%)",
-                    x       = 0,
-                    xanchor ="left",
-                    y       = 1.1,
-                    yanchor = "top", 
-                    orientation = "h", 
-                    tickvals = [0, 20, 40, 60, 80, 100],
-                    ticktext = ["0%", "20%", "40%", "60%", "80%", "100%"]
-                )
-            )
-            st.plotly_chart(fig)
+            map = viz.genMap(data4map = data4map, eu_nuts  = eu_nuts, color_palette = color_palette)
+            st.plotly_chart(map, use_container_width = True)
             st.markdown("---")
             st.markdown(
                 f"""
@@ -494,7 +481,7 @@ if viz.check_password():
             )
             st.markdown("---")
 
-        with tab2:
+        with bars_tab:
             st.markdown(
                 f"""
                 <h4 style='text-align: left;'>{title} (Country level)</h4>
@@ -503,48 +490,10 @@ if viz.check_password():
                 """, 
                 unsafe_allow_html=True
             )
+            bars = viz.genBars(data = data4bars, cpal = color_palette, level = "indicator")
+            st.plotly_chart(bars, use_container_width = True)
 
-            # Drawing Bar Chart
-            bars = px.bar(
-                data4bars, 
-                x = "value2plot", 
-                y = "country_name_ltn",
-                color = "value2plot", 
-                orientation  = "h",
-                range_color  = [0,100],
-                custom_data  = ["country_name_ltn", "value2plot"],
-                color_continuous_scale = color_palette,
-                color_continuous_midpoint = 50
-            )
-            bars.update_traces(
-                hovertemplate="%{customdata[0]}<br>Value: %{customdata[1]:.1f}%"
-            )
-            bars.update_layout(
-                xaxis_title = "Percentage (%)",
-                yaxis_title = None,
-                showlegend  = False,
-                margin = {"r":0,"t":0,"l":0,"b":0},
-                xaxis  = dict(
-                    range = [0, 100],
-                    dtick = 20
-                ),
-                yaxis = dict(
-                    tickmode = "linear"
-                ),
-                coloraxis_colorbar = dict(
-                    title   = "Percentage(%)",
-                    # x       = 0,
-                    # xanchor = "left",
-                    y       = 1.2,
-                    yanchor = "top", 
-                    orientation = "h",
-                    tickvals = [0, 20, 40, 60, 80, 100],
-                    ticktext = ["0%", "20%", "40%", "60%", "80%", "100%"]
-                )
-            )
-            st.plotly_chart(bars, config = {"displayModeBar": False})
-
-        with tab3:
+        with table_tab:
             st.markdown(
                 f"""
                 <h4 style='text-align: left;'>{title} (Regional level)</h4>
@@ -595,8 +544,8 @@ if viz.check_password():
                     ),
                 },
             )
-    with czechia_tab:
 
+    with czechia_tab:
         st.markdown(
             f"""
             <h3 style='text-align: left;'>Does the regional grouping in Czechia affect the main findings?</h3>
@@ -611,29 +560,70 @@ if viz.check_password():
                 no matter which grouping option are you working, the deviations will give a different approach to answer
                 the question by using a fixed benchmark.
             </p>
-            <p class='jtext'>
-                Available options:
-            </p>
-            <ul>
-                <li>
-                    <b>T1</b>: Based on geography/population. CZ01+CZ02, CZ03+CZ04, CZ05+CZ06, CZ07+CZ08.
-                </li>
-                <li>
-                    <b>T2</b>: Based on geography/population. CZ01+CZ02, CZ03+CZ06, CZ04+CZ05, CZ07+CZ08.
-                </li>
-                <li>
-                    <b>T3</b>: Based on cultural divisions. CZ01+CZ02, CZ03+CZ04+CZ05, CZ06+CZ07, CZ08.
-                </li>
-                <li>
-                    <b>T4</b>: Based on cultural divisions. CZ01+CZ02, CZ03+CZ04+CZ05, CZ06, CZ07+CZ08.
-                </li>
-                <li>
-                    <b>T5</b>: Based on both geographic and cultural features. CZ01, CZ02+CZ03+CZ04, CZ05+CZ06, CZ07+CZ08.
-                </li>
-            </ul>
             """, 
             unsafe_allow_html=True
         )
+        with st.expander("Click here to see the detail of options"):
+            st.markdown(
+                f"""
+                <p class='jtext'>
+                    Available options:
+                </p>
+                <ul>
+                    <li>
+                        <b>T1</b>: Based on geography/population:
+                        <ul>
+                            <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
+                            <li>CZ03 (Southwest) + CZ04 (Northwest)</li>
+                            <li>CZ05 (Northeast) + CZ06 (Southeast)</li>
+                            <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
+                        </ul>
+                    </li>
+                    <br>
+                    <li>
+                        <b>T2</b>: Based on geography/population:
+                        <ul>
+                            <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
+                            <li>CZ03 (Southwest) + CZ06 (Southeast)</li>
+                            <li>CZ04 (Northwest) + CZ05 (Northeast)</li>
+                            <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
+                        </ul>
+                    </li>
+                    <br>
+                    <li>
+                        <b>T3</b>: Based on cultural divisions:
+                        <ul>
+                            <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
+                            <li>CZ03 (Southwest) + CZ04 (Northwest) + CZ05 (Northeast)</li>
+                            <li>CZ06 (Southeast) + CZ07 (Central Moravia)</li>
+                            <li>CZ08 (Moravian-Silesian)</li>
+                        </ul>
+                    </li>
+                    <br>
+                    <li>
+                        <b>T4</b>: Based on cultural divisions:
+                        <ul>
+                            <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
+                            <li>CZ03 (Southwest) + CZ04 (Northwest) + CZ05 (Northeast)</li>
+                            <li>CZ06 (Southeast)</li>
+                            <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
+                        </ul>
+                    </li>
+                    <br>
+                    <li>
+                        <b>T5</b>: Based on both geographic and cultural features:
+                        <ul>
+                            <li>CZ01 (Prague)</li>
+                            <li>CZ02 (Central Bohemia) + CZ03 (Southwest) + CZ04 (Northwest)</li>
+                            <li>CZ05 (Northeast) + CZ06 (Southeast)</li>
+                            <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
+                        </ul>
+                    </li>
+                </ul>
+                <br>
+                """, 
+                unsafe_allow_html=True
+            )
 
         topics = [
             "Trust", "Corruption Perceptions", "Justice System Evaluation", "Law Enforcement Performance",
@@ -663,7 +653,6 @@ if viz.check_password():
         czechia_data = czechia_data[czechia_data["topic"].isin(topics)]
         czechia_data["title"] = czechia_data["title"].str.replace(r"^Graph \d+\. ", "", regex=True)
         czechia_data["grouping"] = czechia_data["region"].str[:2]
-
 
         for topic in topics:
             with st.empty():
