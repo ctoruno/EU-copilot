@@ -564,37 +564,27 @@ if passcheck.check_password():
             unsafe_allow_html=True
         )
 
-        with st.expander("Click here to view our summary/analysis"):
-            st.markdown(
-                f"""
-                <p class= 'jtext'>
-                    Our analysis (from the DAU):
-                </p>
-                <ul>
-                    <li>
-                    Option 2 is slightly more efficient in reducing heterogeneity across regions. In other words, it reduces the regional differences across topics. Option 1 is also a good alternative if we do not want to inflate the regional differences. The "reduced" differences across regions seems to be common in the options where all regions have at least 500 observations.
-                    </li>
-                    <br>
-                    <li>
-                    Option 5 is the option that produces the highest differences across regions. However, as mentioned above, these differences would not affect the overall findings across thematic topics. Leaving Prague as a sole region shows higher values for trust of authority figures, perception of corruption in institutions, and other variables. This "amplified" differences could be due to higher SES and Urban levels, but also because of the reduced sample for Prague (only 250 people).
-                    </li>
-                    <br>
-                    <li>
-                    Option 3 and 4 show very marginal differences in the results.
-                    </li>
-                    <br>
-                    <li>
-                    Finally, we would like to warn about the potential sampling issues for choosing a grouping option in which a region is left alone. In this specific scenario, we would be dealing with a total sample size of 250 respondents for that region, which is even lower than the total samples that we have for some Caribbean countries. This would be a total sample of only 125 respondents for questions in which the questionnaire is split into two sub-groups: Civic Participation and Institutional Performance modules.
-                    </li>
-                    <br>
-                    <li>
-                    <b>At this point, our preference would be using Option 1 for grouping sub-national regions.</b>
-                    </li>
-                    <br>
-                </ul>
-                """,
-                unsafe_allow_html=True
-            )
+        st.markdown(
+            f"""
+            <h5 style='text-align: left;'>Summary/Analysis</h5>
+            <p class='jtext'>
+            Option 2 is slightly more efficient in reducing heterogeneity across regions. In other words, it reduces the regional differences across topics. Option 1 is also a good alternative if we do not want to inflate the regional differences. The "reduced" differences across regions seems to be common in the options where all regions have at least 500 observations.
+            </p>
+            <p class='jtext'>
+            Option 5 is the option that produces the highest differences across regions. However, as mentioned above, these differences would not affect the overall findings across thematic topics. Leaving Prague as a sole region shows higher values for trust of authority figures, perception of corruption in institutions, and other variables. This "amplified" differences could be due to higher SES and Urban levels, but also because of the reduced sample for Prague (only 250 people).
+            </p>
+            <p class='jtext'>
+            Option 3 and 4 show very marginal differences in the results.
+            </p>
+            <p class='jtext'>
+            Finally, we would like to warn about the potential sampling issues for choosing a grouping option in which a region is left alone. In this specific scenario, we would be dealing with a total sample size of 250 respondents for that region, which is even lower than the total samples that we have for some Caribbean countries. This would be a total sample of only 125 respondents for questions in which the questionnaire is split into two sub-groups: Civic Participation and Institutional Performance modules.
+            </p>
+            <p class='jtext'>
+            <b>At this point, our preference would be using Option 1 for grouping sub-national regions.</b>
+            </p>
+            """,
+            unsafe_allow_html=True
+        )
 
         with st.expander("Click here to see the detail of options"):
             st.markdown(
