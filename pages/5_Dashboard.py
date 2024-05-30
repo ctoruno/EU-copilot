@@ -590,6 +590,7 @@ if passcheck.check_password():
                     <li>
                     <b>At this point, our preference would be using Option 1 for grouping sub-national regions.</b>
                     </li>
+                    <br>
                 </ul>
                 """,
                 unsafe_allow_html=True
