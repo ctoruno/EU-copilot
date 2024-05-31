@@ -9,7 +9,6 @@ This version:   March 24h, 2024
 
 import json
 import re
-import numpy as np
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as stc
