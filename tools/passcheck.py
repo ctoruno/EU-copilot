@@ -7,6 +7,8 @@ Description:    This module contains all the functions and classes to be used by
 This version:   May 20th, 2024
 """
 import streamlit as st
+import requests
+import json
 
 # Defining a function to check for password
 def check_password():
@@ -36,3 +38,15 @@ def check_password():
     else:
         # Password correct.
         return True
+    
+def retrieve_DBtoken(key, secret):
+    data = {
+        'refresh_token': "kklGSIYU0ggAAAAAAAAAASj4xcAhbZXVpz5lF4trmmGzro47_KqRkndtuvevuinj",
+        'grant_type': 'refresh_token',
+        'client_id': key,
+        'client_secret': secret,
+    }
+    response = requests.post('https://api.dropbox.com/oauth2/token', data = data)
+    response_data = json.loads(response.text)
+    access_token  = response_data["access_token"]
+    return access_token
