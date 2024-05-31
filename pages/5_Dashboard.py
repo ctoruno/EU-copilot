@@ -611,7 +611,7 @@ if passcheck.check_password():
         st.markdown(
             f"""
             <p class='jtext'>
-                You have successfully selected <strong style="color:#003249">{title_xaxis}</strong> to be 
+                You have successfully selected <strong style="color:#003249">{title_lab}</strong> to be 
                 your comparison variable. Data related to this indicator will be displayed in the 
                 <b>Y-Axis</b> of the plot.
             </p>
