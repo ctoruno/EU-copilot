@@ -7,6 +7,7 @@ Description:    This module contains the code of the Dashboard tab for the EU Co
 This version:   May 24th, 2024
 """
 
+import re
 import pandas as pd
 import geopandas as gpd
 import streamlit as st
@@ -20,7 +21,7 @@ if passcheck.check_password():
     st.set_page_config(
         page_title = "Dashboard",
         page_icon  = "📶",
-        # layout     = "wide"
+        # layout   = "wide"
     )
 
     # Reading CSS styles
@@ -150,7 +151,7 @@ if passcheck.check_password():
                     row["direction"], 
                 )), axis = 1)
 
-        # Drawing Bar Charts
+        # Content
         color_codes   = ["#E03849", "#FF7900", "#FFC818", "#46B5FF", "#0C75B6", "#18538E"]
         value_breaks  = [0.00, 0.20, 0.40, 0.60, 0.80, 1.00]
         color_palette = [[color, value] for color, value in zip(value_breaks, color_codes)]
@@ -445,7 +446,7 @@ if passcheck.check_password():
         reportV  = outline.loc[outline["n"] == chart_n].reportValues.iloc[0]
 
         # Defining tabs (Indicator Level)
-        map_tab, bars_tab, table_tab = st.tabs(["Sub-national Summary", "National Synopsis", "Detail"])
+        map_tab, bars_tab, table_tab, lab_tab = st.tabs(["Sub-national Summary", "National Synopsis", "Detail", "Cross Lab"])
 
         direction    = outline.loc[outline["n"] == chart_n].direction.iloc[0]
         color_codes  = ["#E03849", "#FF7900", "#FFC818", "#46B5FF", "#0C75B6", "#18538E"]
@@ -545,10 +546,129 @@ if passcheck.check_password():
                 },
             )
 
+    with lab_tab:
+        title_xaxis  = re.sub("Graph \d+\. ", "", title)
+        st.markdown(
+                f"""
+                <h3 style='text-align: center;'>
+                    Cross Lab
+                </h3>
+                <p class='jtext'>
+                    In this tab you can cross two variables into a single plot to see how correlated the variables are. The correlations are
+                    visualized using scatter plots. Right now, you are working with data related to: 
+                    <strong style="color:#003249">{title_xaxis}</strong>. This is your <b>target variable</b> and its values are going to be 
+                    displayed in the <b>X-Axis</b> of the plot. However, you still need to select a comparison variable to display in the plot. 
+                    For this, please use the menus below:
+                </p>
+                """, 
+                unsafe_allow_html=True
+            )
+
+        # Filters
+        chapter_lab = st.selectbox(
+            "Please select a thematic chapter from the list below",
+            (outline
+            .drop_duplicates(subset = "chapter")
+            .chapter.to_list()),
+            key = "chapter_lab"
+        )
+        section_lab = st.selectbox(
+            "Please select a thematic section from the list below",
+            (outline
+            .loc[outline["chapter"] == chapter_lab]
+            .drop_duplicates(subset = "section")
+            .section.to_list()),
+            key = "section_lab"
+        )
+        chart_lab = st.selectbox(
+            "Please select a graph from the list below",
+            (outline
+            .loc[(outline["section"] == section_lab) & (outline["n"] != chart_n)]
+            .drop_duplicates(subset = "title")
+            .title.to_list()),
+            key = "chart_lab"
+        )
+
+        # Subsetting and preparing data
+        chart_n_lab = outline.loc[outline["title"] == chart_lab, "n"].iloc[0]
+        n4lab = [chart_n, chart_n_lab]
+        data4lab = (
+            data_points.copy()
+            .loc[(data_points["chart"].isin(n4lab)) & (data_points["level"] == "regional")]
+        )
+        data4lab["chart"] = data4lab["chart"].map({chart_n: "xaxis", chart_n_lab: "yaxis"})
+        data4lab  = data4lab.pivot(
+                index   = ["country_name_ltn", "nuts_id", "nameSHORT"],
+                columns = "chart",
+                values  = "value2plot"
+            ).reset_index()
+
+        # Defining Annotations
+        title_lab    = outline.loc[outline["n"] == chart_n_lab].title.str.replace(r"Graph \d+\. ", "", regex=True).iloc[0]
+        subtitle_lab = outline.loc[outline["n"] == chart_n_lab].subtitle.iloc[0]
+        reportV_lab  = outline.loc[outline["n"] == chart_n_lab].reportValues.iloc[0]
+
+        st.markdown(
+            f"""
+            <p class='jtext'>
+                You have successfully selected <strong style="color:#003249">{title_xaxis}</strong> to be 
+                your comparison variable. Data related to this indicator will be displayed in the 
+                <b>Y-Axis</b> of the plot.
+            </p>
+            <p class='jtext'>
+                A RED regression line will be draw in your plot. This line will be signaling the correlation level between 
+                the selected variables.
+            </p>
+            <ul>
+                <li>
+                    If the line is either fully vertical or fully horizontal, there is no correlation between the variables. 
+                </li>
+                <li>
+                    If the line shows a degree of steepness, that means your variables are correlated:
+                    <ul>
+                        <li>
+                            A 45 degrees steepness shows a positive correlation between your variables. In other words, 
+                            if your target variable increases, then your comparison variable will increase.
+                        </li>
+                        <li>
+                            A 315 degrees steepness shows a negative correlation between your variables. In other words, 
+                            if your target variable increases, then your comparison variable will decrease.
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            """, 
+            unsafe_allow_html=True
+        )
+        
+        scplot = viz.genScatter(data4lab, title_xaxis, title_lab, color_palette)
+        st.plotly_chart(scplot, use_container_width = True)
+
+        with st.expander("Click here for more information on your TARGET variable"):
+            st.markdown(
+                f"""
+                <h4 style='text-align: left;'>{title_xaxis} (Regional level)</h4>
+                <h6 style='text-align: left;'><i>{subtitle}</i></h6>
+                <p style='text-align: left;'><i>Reported values: {reportV}</i></p>
+                """, 
+                unsafe_allow_html=True
+            )
+        with st.expander("Click here for more information on your COMPARISON variable"):
+            st.markdown(
+                f"""
+                <h4 style='text-align: left;'>{title_lab} (Regional level)</h4>
+                <h6 style='text-align: left;'><i>{subtitle_lab}</i></h6>
+                <p style='text-align: left;'><i>Reported values: {reportV_lab}</i></p>
+                """, 
+                unsafe_allow_html=True
+            )
+
     with czechia_tab:
         st.markdown(
             f"""
-            <h3 style='text-align: left;'>Does the regional grouping in Czechia affect the main findings?</h3>
+            <h3 style='text-align: left;'>
+                Does the regional grouping in Czechia affect the main findings?
+            </h3>
             <p class='jtext'>
                 This tab is specially dedicated to answer that question. Here you can compare the data points for 
                 different grouping options and see how much do the resulting data points change. Take into account that
@@ -560,33 +680,44 @@ if passcheck.check_password():
                 no matter which grouping option are you working, the deviations will give a different approach to answer
                 the question by using a fixed benchmark.
             </p>
+            <h5 style='text-align: left;'>
+                Summary
+            </h5>
+            <ul>
+                <li>
+                    <p class='jtext'>
+                    Option 2 is slightly more efficient in reducing heterogeneity across regions. In other words, it reduces 
+                    the regional differences across topics. Option 1 is also a good alternative if we do not want to inflate 
+                    the regional differences. The "reduced" differences across regions seems to be common in the options where 
+                    all regions have at least 500 observations.
+                </p>
+                </li>
+                <li>
+                    <p class='jtext'>
+                        Option 5 is the option that produces the highest differences across regions. However, as mentioned above, 
+                        these differences would not affect the overall findings across thematic topics. Leaving Prague as a sole 
+                        region shows higher values for trust of authority figures, perception of corruption in institutions, and 
+                        other variables. This "amplified" differences could be due to higher SES and Urban levels, but also because 
+                        of the reduced sample for Prague (only 250 people).
+                    </p>
+                </li>
+                <li>
+                    <p class='jtext'>
+                        Option 3 and 4 show very marginal differences in the results.
+                    </p>
+                </li>
+            </ul>
+            <p class='jtext'>
+                Finally, we would like to warn about the potential sampling issues for choosing a grouping option in which a region is left alone. In this specific scenario, we would be dealing with a total sample size of 250 respondents for that region, which is even lower than the total samples that we have for some Caribbean countries. This would be a total sample of only 125 respondents for questions in which the questionnaire is split into two sub-groups: Civic Participation and Institutional Performance modules.
+            </p>
+            <p class='jtext'>
+                <b>At this point, our preference would be using Option 1 for grouping sub-national regions.</b>
+            </p>
             """, 
             unsafe_allow_html=True
         )
 
-        st.markdown(
-            f"""
-            <h5 style='text-align: left;'>Summary/Analysis</h5>
-            <p class='jtext'>
-            Option 2 is slightly more efficient in reducing heterogeneity across regions. In other words, it reduces the regional differences across topics. Option 1 is also a good alternative if we do not want to inflate the regional differences. The "reduced" differences across regions seems to be common in the options where all regions have at least 500 observations.
-            </p>
-            <p class='jtext'>
-            Option 5 is the option that produces the highest differences across regions. However, as mentioned above, these differences would not affect the overall findings across thematic topics. Leaving Prague as a sole region shows higher values for trust of authority figures, perception of corruption in institutions, and other variables. This "amplified" differences could be due to higher SES and Urban levels, but also because of the reduced sample for Prague (only 250 people).
-            </p>
-            <p class='jtext'>
-            Option 3 and 4 show very marginal differences in the results.
-            </p>
-            <p class='jtext'>
-            Finally, we would like to warn about the potential sampling issues for choosing a grouping option in which a region is left alone. In this specific scenario, we would be dealing with a total sample size of 250 respondents for that region, which is even lower than the total samples that we have for some Caribbean countries. This would be a total sample of only 125 respondents for questions in which the questionnaire is split into two sub-groups: Civic Participation and Institutional Performance modules.
-            </p>
-            <p class='jtext'>
-            <b>At this point, our preference would be using Option 1 for grouping sub-national regions.</b>
-            </p>
-            """,
-            unsafe_allow_html=True
-        )
-
-        with st.expander("Click here to see the detail of options"):
+        with st.expander("Click here to see the detail of current options"):
             st.markdown(
                 f"""
                 <p class='jtext'>
@@ -685,10 +816,10 @@ if passcheck.check_password():
                     """, 
                     unsafe_allow_html=True
                 )
-                dotties = viz.genDots(
+                dotties = viz.genDotties(
                     data = czechia_data, 
                     topic = topic, 
                     groupings = groupings, 
                     stat = stat
                 )
-                st.plotly_chart(dotties)
+                st.plotly_chart(dotties, use_container_width = True)

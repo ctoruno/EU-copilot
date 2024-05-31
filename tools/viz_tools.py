@@ -121,6 +121,54 @@ def wrap_text(text):
 
     return '<br>'.join(lines)
 
+def genScatter(data, xtitle, ytitle, color_map):
+    fig = px.scatter(
+            data, 
+            x = "xaxis", 
+            y = "yaxis", 
+            color = "xaxis",
+            trendline   = "ols",
+            custom_data = ["country_name_ltn", "nuts_id", "nameSHORT", "xaxis", "yaxis"],
+            color_continuous_scale    = color_map,
+             trendline_color_override = "red"
+        )
+    fig.update(
+        layout_coloraxis_showscale = False
+    )
+    fig.update_traces(
+        hovertemplate = "<b>%{customdata[0]}</b><br>%{customdata[2]}<br>" + f"<i>{xtitle}: " + "%{customdata[3]:.1f}%</i><br>" + f"<i>{ytitle}: " + "%{customdata[4]:.1f}%</i><br>"
+    )
+    fig.update_layout(
+        xaxis_title = xtitle,
+        yaxis_title = ytitle,
+        showlegend  = False,
+        margin = {"r":0,"t":25,"l":0,"b":0},
+        xaxis  = dict(
+            range     = [0, 100],
+            dtick     = 20,
+            showline  = True,
+            mirror    = True,
+            linewidth = 1,
+            linecolor = "black"
+        ),
+        yaxis  = dict(
+            range     = [0, 100],
+            dtick     = 20,
+            showgrid  = False,
+            showline  = True,
+            mirror    = True,
+            linewidth = 1,
+            linecolor = "black",
+            zeroline  = False
+        ),
+        hoverlabel = dict(
+            bgcolor     = "white",
+            font_size   = 15,
+            font_family = "Lato"
+        )
+    )
+    return fig
+
 def genBees(country_data, country_select):
 
     ntopics = len(
@@ -165,7 +213,7 @@ def genBees(country_data, country_select):
     )
     return fig
 
-def genDots(data, topic, groupings, stat):
+def genDotties(data, topic, groupings, stat):
     if stat == "Data Points":
         xaxis = "value2plot"
     if stat == "Deviations from National Average":
