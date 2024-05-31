@@ -7,4 +7,3 @@ pyreadstat==1.2.5
 plotly==5.21.0
 geopandas==0.14.0
 statsmodels==0.14.2
-patsy==0.5.6
