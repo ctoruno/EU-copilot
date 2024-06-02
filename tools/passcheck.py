@@ -39,9 +39,9 @@ def check_password():
         # Password correct.
         return True
     
-def retrieve_DBtoken(key, secret):
+def retrieve_DBtoken(key, secret, refresh_token):
     data = {
-        'refresh_token': "kklGSIYU0ggAAAAAAAAAASj4xcAhbZXVpz5lF4trmmGzro47_KqRkndtuvevuinj",
+        'refresh_token': refresh_token,
         'grant_type': 'refresh_token',
         'client_id': key,
         'client_secret': secret,
