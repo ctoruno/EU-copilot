@@ -285,7 +285,7 @@ def genMap(data4map, eu_nuts, color_palette):
     return fig
 
 
-def genDumbbell(subset_df, subsection, chosen_country_color):
+def genDumbbell(subset_df, subsection):
 
     fig = go.Figure()
 
@@ -295,7 +295,7 @@ def genDumbbell(subset_df, subsection, chosen_country_color):
             x = [row['eu_value'], row['country_value']],
             y = [row['title'], row['title']],
             mode = 'lines+markers+text',
-            marker = dict(size = 13, color = ['blue', chosen_country_color]),
+            marker = dict(size = 13, color = ['blue', 'red']),
             line = dict(color = 'gray'),
             text = [None, f"{row['difference']:+.2f}"],
             textposition = 'middle right' if row['difference'] > 0 else 'middle left',
@@ -310,11 +310,12 @@ def genDumbbell(subset_df, subsection, chosen_country_color):
         height = 400,
         width = 800,
         xaxis = dict(range = [0,100]),
+        yaxis = dict(showgrid = False),
         xaxis_title = None,
         yaxis_title = None,
         template = "plotly_white",
         showlegend = False,
-        margin=dict(l=50, r=50, t=50, b=50),  
+        margin=dict(l=50, r=50, t=50, b=50)
 
     )
 
@@ -330,11 +331,11 @@ def genRankingsViz(subset_df, subsection, chosen_country):
     fig = px.scatter(
         subset_df,
         x = 'ranking',
-        y = 'title',
+        y = 'title', # wrap 
         title = f'{subsection}',
         color = 'country_name_ltn',
         color_discrete_sequence=color_scale,
-        custom_data=['country_name_ltn', 'value2plot', 'subtitle'],
+        custom_data=['country_name_ltn', 'value2plot', 'subtitle', 'ranking'],
         range_color=[1,27]
     )
 
@@ -346,14 +347,15 @@ def genRankingsViz(subset_df, subsection, chosen_country):
     fig.update_traces(
     hovertemplate="<br>".join([
         "<b><span style='font-size: 14px;'>%{customdata[0]}</span></b>",  
-        "<i>Reported Value: %{customdata[1]:.1f}</i>",
-        "<i>Context: %{customdata[2]}</i>"
+        "<i><b>Reported Value: %{customdata[1]:.1f}</i>",
+        "<i>Context: %{customdata[2]}</i>",
+        "Ranking: %{customdata[3]}"
     ])
     )
 
     fig.update_layout(
-        height=400,
-        width=800,
+        height=450,
+        width=860,
         xaxis_title='Ranking in the EU',
         yaxis_title=None,
         template="plotly_white",
