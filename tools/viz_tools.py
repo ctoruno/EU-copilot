@@ -308,13 +308,14 @@ def genDumbbell(subset_df, subsection, chosen_country_color):
     fig.update_layout(
         title = subsection,
         height = 400,
-        width = 1200,
+        width = 800,
         xaxis = dict(range = [0,100]),
-        margin=dict(l=50, r=50, t=50, b=50),  # margins were weird
         xaxis_title = None,
         yaxis_title = None,
         template = "plotly_white",
-        showlegend = False
+        showlegend = False,
+        margin=dict(l=50, r=50, t=50, b=50),  
+
     )
 
     return fig
@@ -362,7 +363,7 @@ def genRankingsViz(subset_df, subsection, chosen_country):
         xaxis=dict(showgrid = False)   
     )
 
-    fig.update_traces(marker=dict(size=10))
+    fig.update_traces(marker=dict(size=11))
 
     return fig
 
