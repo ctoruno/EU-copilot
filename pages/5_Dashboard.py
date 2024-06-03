@@ -15,6 +15,7 @@ import plotly.express as px
 from tools import viz_tools as viz
 from tools import passcheck
 
+
 if passcheck.check_password():
 
     # Page config
@@ -366,12 +367,124 @@ if passcheck.check_password():
         st.plotly_chart(bees, config = {"displayModeBar": False})
 
     with countrytab:
-        st.markdown("COMING SOON")
 
+        st.markdown(
+            f"""
+            <h3 style='text-align: left;'> How are individual member states performing across WJP indicators? </h3>
+            <p class='jtext'>
+                This tab is meant to provide additional insight into the performance of individual countries, either relative to 
+                EU averages or to other member states. Each plot here represents a  WJP subsection, and
+                each line on the y-axis represents an individual indicator. For context on what reported values represent, hover
+                over an individual data point. 
+            """, 
+            unsafe_allow_html=True
+        )
+        
+        rankings_or_score = st.selectbox(
+            "Would you like to focus on member-state rankings or the deviation from EU averages?",
+            ["Rankings", "Averages"],
+            index = 1
+            )
+
+
+        country = st.selectbox(
+                "Please select a country from the list below:",
+                (data_points
+                .drop_duplicates(subset = "country_name_ltn")
+                .country_name_ltn.to_list())
+            )
+        
+        chapter = st.selectbox(
+             "Please select a thematic chapter from the list below: ",
+             (outline.drop_duplicates(subset = "chapter").chapter.to_list())
+         )
+
+
+        section_select = st.selectbox(
+            "Please select a section from the list below: ",
+            (outline
+            .loc[outline["chapter"] == chapter]
+            .drop_duplicates(subset = "section")
+            .section.to_list())
+        )
+        
+        if rankings_or_score == "Averages":
+            # prepare data
+            eu_and_country = pd.concat([eu_data, country_data])
+
+            # get colors -- how do I use the predefined color palette??
+            color_scale = px.colors.qualitative.G10
+            countries = eu_and_country['country_name_ltn'].unique()
+            country_colors = {country: color_scale[i % len(color_scale)] for i, country in enumerate(countries)}
+            eu_and_country['color'] = eu_and_country['country_name_ltn'].map(country_colors)
+
+
+            eu_and_country["title"] = eu_and_country["title"].str.replace(r"^Graph \d+\. ", "", regex=True)
+            subset_df = eu_and_country.loc[((eu_and_country['country_name_ltn'] == country) | (eu_and_country['country_name_ltn'] == 'European Union'))
+                                          & (eu_and_country['chapter'] == chapter) & (eu_and_country['section'] == section_select)]
+            subset_df['subsection'] = subset_df['subsection'].str.replace(r'<.*?>', ' ', regex=True)  # remove HTML tags
+
+            filtered_colors = {k: v for k, v in country_colors.items() if k in [country, 'European Union']}
+
+            # legend
+            legend_html = "<div style='display: flex; flex-wrap: wrap;'>"
+            for country, color in filtered_colors.items():
+                legend_html += f"<div style='margin-left: 10px; font-size: 12px'><span style='color:{color};'>■</span> {country}</div>"
+                legend_html += "</div>"
+
+            # display legend
+            st.markdown(legend_html, unsafe_allow_html=True)
+
+
+            # make a pivot to get EU and country data in seperate columns
+            pivot_df = subset_df.pivot_table(
+                index = ['title', 'subsection','subtitle'],
+                columns = 'country_name_ltn',
+                values = 'value2plot'
+            ).reset_index()
+
+            pivot_df.columns = ['title','subsection', 'subtitle', 'eu_value', 'country_value']
+
+            pivot_df['difference'] = pivot_df['country_value'] - pivot_df['eu_value']
+            pivot_df['country_name_ltn'] = country
+
+            
+            # get unique subsections
+            subsections = subset_df["subsection"].unique()
+
+            # make a plot for each subsection
+            for subsection in subsections:
+                subsection_data = pivot_df[pivot_df['subsection'] == subsection]
+                country_dumbbell = viz.genDumbbell(subsection_data, subsection, country_colors[country])
+                st.plotly_chart(country_dumbbell)
+        
+        else:
+            # get rankings data
+            country_data["ranking"] = country_data.groupby(['section','subsection','chart', 'title' ])['value2plot']\
+                                  .rank(method='first', ascending=False).astype(int)
+            
+            # filter by chapter and section
+            filtered_data = country_data.loc[(country_data['chapter'] == chapter)
+                                             & (country_data['section'] == section_select)]
+            
+            # remove 'Graph X' from titles
+            filtered_data["title"] = filtered_data["title"].str.replace(r"^Graph \d+\. ", "", regex=True)
+            
+            # collection of subsections to iterate through
+            subsections = filtered_data['subsection'].unique()
+
+            # make a plot for each subsection
+            for subsection in subsections:
+                subsection_df = filtered_data[filtered_data['subsection'] == subsection]
+                rankings_viz = viz.genRankingsViz(subsection_df, subsection, country)
+                st.plotly_chart(rankings_viz)
+
+
+            
     with vartab:
 
         # Filters
-        chapter = st.selectbox(
+        chapter_select = st.selectbox(
             "Please select a thematic chapter from the list below",
             (outline
             .drop_duplicates(subset = "chapter")
@@ -392,9 +505,10 @@ if passcheck.check_password():
             .title.to_list())
         )
         country_focused = st.toggle(
-            "Would you like to focus on a single country?",
+            "Would you like to focus on a single country? ",
             value = True
         )
+
         if country_focused == True:
             country_select = st.multiselect(
                 "(Optional) Please select a country from the list below:",

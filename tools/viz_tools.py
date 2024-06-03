@@ -7,6 +7,7 @@ Description:    This module contains all the functions and classes to be used by
 This version:   May 24th, 2024
 """
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 def genBars(data, cpal, level):
@@ -282,3 +283,92 @@ def genMap(data4map, eu_nuts, color_palette):
         )
     )
     return fig
+
+
+def genDumbbell(subset_df, subsection, chosen_country_color):
+
+    fig = go.Figure()
+
+    for index, row in subset_df.iterrows():
+
+        fig.add_trace(go.Scatter(
+            x = [row['eu_value'], row['country_value']],
+            y = [row['title'], row['title']],
+            mode = 'lines+markers+text',
+            marker = dict(size = 13, color = ['blue', chosen_country_color]),
+            line = dict(color = 'gray'),
+            text = [None, f"{row['difference']:+.2f}"],
+            textposition = 'middle right' if row['difference'] > 0 else 'middle left',
+            textfont = dict(color = 'green' if row['difference'] > 0 else 'red'),
+            hoverinfo='text',
+            hovertext = f"<br><i>{wrap_text(row['subtitle'])}</i></b><br><b>Reported {wrap_text(row['country_name_ltn'])} Value:</b> {row['country_value']:.1f}<br><b>Reported EU Value:</b> {row['eu_value']:.1f}",
+            hoverlabel=dict(font_size=13, align='left')
+        ))
+
+    fig.update_layout(
+        title = subsection,
+        height = 400,
+        width = 1200,
+        xaxis = dict(range = [0,100]),
+        margin=dict(l=50, r=50, t=50, b=50),  # margins were weird
+        xaxis_title = None,
+        yaxis_title = None,
+        template = "plotly_white",
+        showlegend = False
+    )
+
+    return fig
+    
+
+def genRankingsViz(subset_df, subsection, chosen_country):
+
+    color_scale = px.colors.qualitative.G10
+    subset_df['subtitle'] = subset_df['subtitle'].apply(wrap_text)
+
+
+    fig = px.scatter(
+        subset_df,
+        x = 'ranking',
+        y = 'title',
+        title = f'{subsection}',
+        color = 'country_name_ltn',
+        color_discrete_sequence=color_scale,
+        custom_data=['country_name_ltn', 'value2plot', 'subtitle'],
+        range_color=[1,27]
+    )
+
+    # opacity of chosen country bolded, every thing else faded
+    for trace_index, country in enumerate(subset_df['country_name_ltn']):
+        opacity = 1 if country == chosen_country else 0.1
+        fig.update_traces(selector=dict(name=country), opacity=opacity)
+
+    fig.update_traces(
+    hovertemplate="<br>".join([
+        "<b><span style='font-size: 14px;'>%{customdata[0]}</span></b>",  
+        "<i>Reported Value: %{customdata[1]:.1f}</i>",
+        "<i>Context: %{customdata[2]}</i>"
+    ])
+    )
+
+    fig.update_layout(
+        height=400,
+        width=800,
+        xaxis_title='Ranking in the EU',
+        yaxis_title=None,
+        template="plotly_white",
+        showlegend=False,
+        margin=dict(l=50, r=50, t=50, b=50),  
+        yaxis=dict(showgrid = False),  
+        xaxis=dict(showgrid = False)   
+    )
+
+    fig.update_traces(marker=dict(size=10))
+
+    return fig
+
+
+
+
+
+    
+
