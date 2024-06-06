@@ -4,7 +4,7 @@
 ##
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-def paragraph(country, type):
+def paragraph(country):
   
   if country == "Austria":
     
@@ -14,7 +14,7 @@ def paragraph(country, type):
     p=  """ 
       <b>Insights summary</b>
       <br>
-      We are seeing that across time, a lot pillars and subpillars are flagged. However, our previous data is from 2017, and thus we expect there to be changes. Furthermore, in comparison to the TPS public opinion polls, we don't have any red flag. This indicates that our data is in accordance with other population surveys, which is one of the most important goals. In terms of the TPS expert surveys, we are flagging a few subpillars, however we are conscious that we trust these scores less and that all of these have green flags in other analyses. 
+      We are seeing that across time, a lot of pillars and subpillars are flagged. However, our previous data is from 2017, and thus we expect there to be changes. Furthermore, in comparison to the TPS public opinion polls, we don't have any red flags. This indicates that our data is in accordance with other population surveys, which is one of the most important goals. In terms of the TPS expert surveys, we are flagging a few subpillars, however we are conscious that we trust these scores less and that all of these have green flags in other analyses. 
       <br>
       <br>
       Given that we expect to see large changes from our previous data in Austria, we are noting sub pillars that are flagged in both the GPP and TPS analyses. In this regard, all the topics that are flagged in the time comparison but supported by green flags in the TPS are considered as something normal in the context of Austria. Therefore, what we are highlighting are the discrepancies found in the data in two aspects: the ones that are consistent in both analyses, and also the ones that are not supported by another analysis. In the case of Austria, all the changes over the time are supported by the TPS.
