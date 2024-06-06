@@ -230,56 +230,56 @@ if passcheck.check_password():
 
         st.markdown("""**Overview**
 
-    The goal of this page is to facilitate the evaluation of concern for extreme issues in the GPP.
+The goal of this page is to facilitate the evaluation of concern for extreme issues in the GPP.
 
-    We want to preserve the validation review process that has been implemented in the past by the GPP team, while also providing more structure and a quicker way to identify potential issues. Instead of keeping track of multiple files and documents on your device, all of the relevant information lives in one dynamic platform. 
+We want to preserve the validation review process that has been implemented in the past by the GPP team, while also providing more structure and a quicker way to identify potential issues. Instead of keeping track of multiple files and documents on your device, all of the relevant information lives in one dynamic platform. 
 
-    Our analyses are built to only identify cases of highly significant differences from our previous data as well as third party source data. We also acknowledge that many indicators are expected to change over time, or change when asked in a different way in another survey. Furthermore, our data is limited by the number of matches that can successfully be drawn from the EU GPP questionnaire to the Global GPP or to a Third Party Source. Ultimately, given these circumstances, it will still be up to the discretion of the GPP team about what and how they would like to communicate anything that might not be justified.
+Our analyses are built to only identify cases of highly significant differences from our previous data as well as third party source data. We also acknowledge that many indicators are expected to change over time, or change when asked in a different way in another survey. Furthermore, our data is limited by the number of matches that can successfully be drawn from the EU GPP questionnaire to the Global GPP or to a Third Party Source. Ultimately, given these circumstances, it will still be up to the discretion of the GPP team about what and how they would like to communicate anything that might not be justified.
 
-    For the full fieldwork, our mindset is to provide the recommendations for which comparisons need more context, and the EU GPP team may dig deeper into the question level if more information is needed.
+For the full fieldwork, our mindset is to provide the recommendations for which comparisons need more context, and the EU GPP team may dig deeper into the question level if more information is needed.
 
-    **Analyses**
+**Analyses**
 
-    Each country is evaluated based on two analyses, internal and external, disaggregated by pillar and sub-pillar. 
+Each country is evaluated based on two analyses, internal and external, disaggregated by pillar and sub-pillar. 
 
-    The internal and external analyses are based on a flagging system which is explained below. This has changed slightly from the pretest flagging system by removing yellow flags and making the thresholds more strict to avoid flagging too many questions. 
+The internal and external analyses are based on a flagging system which is explained below. This has changed slightly from the pretest flagging system by removing yellow flags and making the thresholds more strict to avoid flagging too many questions. 
 
-    The first analysis is a t-test between a subset of EU GPP indicators and their counterparts from the latest Global GPP per country. 
+The first analysis is a t-test between a subset of EU GPP indicators and their counterparts from the latest Global GPP per country. 
 
-    We define a pillar as "significantly different" in the t-test analysis if:
+We define a pillar as "significantly different" in the t-test analysis if:
 
-    - 50% or more of the indicators have a statistically significant difference from our last GPP with a p-value below 0.01 (red flag)
+- 50% or more of the indicators have a statistically significant difference from our last GPP with a p-value below 0.01 (red flag)
 
-    The second is a threshold difference between a few EU GPP indicators and their matched third party source indicators for each sub-pillar.
+The second is a threshold difference between a few EU GPP indicators and their matched third party source indicators for each sub-pillar.
 
-    We define a pillar as "significantly different" in the threshold analysis if:
+We define a pillar as "significantly different" in the threshold analysis if:
 
-    - If 50% or more of the indicators have a threshold difference above 0.35 (red flag)
+- If 50% or more of the indicators have a threshold difference above 0.35 (red flag)
 
-    Although the analysis provides summaries at both the sub-pillar and pillar levels, the unit of analysis remains the same: the indicators. Therefore, to avoid misleading results or bias given the different sizes of sub-pillars, the number of flagged sub-pillars does not affect the number of flagged pillars. 
+Although the analysis provides summaries at both the sub-pillar and pillar levels, the unit of analysis remains the same: the indicators. Therefore, to avoid misleading results or bias given the different sizes of sub-pillars, the number of flagged sub-pillars does not affect the number of flagged pillars. 
 
-    Furthermore, the analysis classifies pillars and sub pillars differently, where pillar summaries concern whether or not they are significantly different while sub pillar summaries concern the presence and direction of underlying trends. 
+Furthermore, the analysis classifies pillars and sub pillars differently, where pillar summaries concern whether or not they are significantly different while sub pillar summaries concern the presence and direction of underlying trends. 
 
-    In both of these tests, we implemented a more qualitative labeling system to incorporate general trends and direction of difference for each sub pillar. We believe that the sub pillars represent political topic areas that are tied together, and if multiple question level comparisons follow the same pattern, this may indicate a political trend that can be validated. 
+In both of these tests, we implemented a more qualitative labeling system to incorporate general trends and direction of difference for each sub pillar. We believe that the sub pillars represent political topic areas that are tied together, and if multiple question level comparisons follow the same pattern, this may indicate a political trend that can be validated. 
 
-    - If 75% or more of the indicators in a sub pillar are red flags (as indicated above), we identify a trend 
-    - If all of the indicators share the same direction of difference, this is indicated as "Potential Negative trend" or "Potential Positive trend"
-    - If these indicators do not share the same direction, this is indicated as "Potential Mixed trend"
-    - Otherwise, the sub pillar is indicated as "No change"
+- If 75% or more of the indicators in a sub pillar are red flags (as indicated above), we identify a trend 
+- If all of the indicators share the same direction of difference, this is indicated as "Potential Negative trend" or "Potential Positive trend"
+- If these indicators do not share the same direction, this is indicated as "Potential Mixed trend"
+- Otherwise, the sub pillar is indicated as "No change"
 
 
-    **Process**
+**Process**
 
-    In order to utilize this document to the fullest, we suggest navigating to the "Country Level Findings" tab to view a summary of which Sub pillars or questions are concerning. The tables in each of the sub-tabs will give you an overview of all the pillars and sub pillars. From there, if any of the Pillars are significantly different, you can investigate further in the "Appendix" tab. Under the Appendix, you can select the Pillar of interest and view the analysis results as well as contextual information for each indicator that we tested. Based on the flags in the tables, it may be necessary to proceed with qualitative research to determine if the significant changes are unexpected, and therefore troublesome. 
+In order to utilize this document to the fullest, we suggest navigating to the "Country Level Findings" tab to view a summary of which Sub pillars or questions are concerning. The tables in each of the sub-tabs will give you an overview of all the pillars and sub pillars. From there, if any of the Pillars are significantly different, you can investigate further in the "Appendix" tab. Under the Appendix, you can select the Pillar of interest and view the analysis results as well as contextual information for each indicator that we tested. Based on the flags in the tables, it may be necessary to proceed with qualitative research to determine if the significant changes are unexpected, and therefore troublesome. 
 
-    Overall, this platform is a tool to help accelerate the process of identifying possible issues that should be further investigated.
+Overall, this platform is a tool to help accelerate the process of identifying possible issues that should be further investigated.
 
-    As a note, scores are re-oriented, normalized, and aggregated. The scores presented in the analyses are created by re-orienting indicators if necessary to ensure that higher numbers are better for the rule of law. Then, they are normalized to fit between 0 and 1 and finally, the individual scores are aggregated by mean.
+As a note, scores are re-oriented, normalized, and aggregated. The scores presented in the analyses are created by re-orienting indicators if necessary to ensure that higher numbers are better for the rule of law. Then, they are normalized to fit between 0 and 1 and finally, the individual scores are aggregated by mean.
 
-    We will offer guidelines regarding which sub-pillars require further context and research to elucidate inconsistencies identified during the quantitative data validation process. We employ a systematic analysis approach using the flagging system to achieve this. Initially, we review all sub-pillars exhibiting potential trends in both the GPP over time analysis and the TPS Public Opinion Polls.
+We will offer guidelines regarding which sub-pillars require further context and research to elucidate inconsistencies identified during the quantitative data validation process. We employ a systematic analysis approach using the flagging system to achieve this. Initially, we review all sub-pillars exhibiting potential trends in both the GPP over time analysis and the TPS Public Opinion Polls.
 
-    If we determine an explanation for the trends observed in the GPP over time within the TPS Public Opinion Polls, we refrain from flagging the sub-pillars. However, in instances where we cannot find an explanation for the observed trends through the intersection of both analyses, we will flag the sub-pillars in the insights summary. A summary of this selection process is presented in the following flowchart.
-    """, 
+If we determine an explanation for the trends observed in the GPP over time within the TPS Public Opinion Polls, we refrain from flagging the sub-pillars. However, in instances where we cannot find an explanation for the observed trends through the intersection of both analyses, we will flag the sub-pillars in the insights summary. A summary of this selection process is presented in the following flowchart.
+""", 
         unsafe_allow_html=True)
             
 
