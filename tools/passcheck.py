@@ -48,5 +48,5 @@ def retrieve_DBtoken(key, secret, refresh_token):
     }
     response = requests.post('https://api.dropbox.com/oauth2/token', data = data)
     response_data = json.loads(response.text)
-    access_token  = response_data["access_token"]
-    return access_token
+    # access_token  = response_data["access_token"]
+    return response_data
