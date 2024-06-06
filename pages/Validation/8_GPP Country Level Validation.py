@@ -20,7 +20,7 @@ import dropbox
 import dropbox.files
 import requests
 import json
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from tools import passcheck
 
 if passcheck.check_password():
