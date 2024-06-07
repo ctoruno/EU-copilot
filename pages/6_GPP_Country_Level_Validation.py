@@ -21,24 +21,21 @@ import dropbox.files
 import requests
 import json
 # from dotenv import load_dotenv
-from tools import passcheck
+from tools import passcheck, sidemenu
+
+# Page config
+st.set_page_config(
+    page_title = "GPP Country Validation",
+    page_icon  = "🇪🇺"
+)
+# Reading CSS styles
+with open("styles.css") as stl:
+    st.markdown(f"<style>{stl.read()}</style>", 
+                unsafe_allow_html=True)
+# Sidebar menu
+sidemenu.insert_smenu()
 
 if passcheck.check_password():
-
-    # Page config
-    st.set_page_config(
-        page_title = "GPP Country Validation",
-        page_icon  = "🇪🇺"
-    )
-    # Reading CSS styles
-    with open("styles.css") as stl:
-        st.markdown(f"<style>{stl.read()}</style>", 
-                    unsafe_allow_html=True)
-
-    #load_dotenv()
-    # dbtoken  = os.getenv("dbtoken")
-    # dbkey    = os.getenv("app_key")
-    # dbsecret = os.getenv("app_secret")
 
     # Defining auth secrets (when app is already deployed)
     dbtoken  = st.secrets["dbtoken"]
@@ -69,8 +66,8 @@ if passcheck.check_password():
 
 
     # Header and explanation
-    st.markdown("<h1 style='text-align: center;'>GPP Country Level Validation</h1>", 
-                unsafe_allow_html=True)
+    # st.markdown("<h1 style='text-align: center;'>GPP Country Level Validation</h1>", 
+    #             unsafe_allow_html=True)
     st.markdown(
         """
         <p class='jtext'>

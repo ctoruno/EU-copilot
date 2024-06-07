@@ -12,6 +12,7 @@ import re
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as stc
+from tools import sidemenu
 
 if "country_track" not in st.session_state:
     st.session_state["country_track"] = False
@@ -33,9 +34,12 @@ with open("styles.css") as stl:
     st.markdown(f"<style>{stl.read()}</style>", 
                 unsafe_allow_html=True)
     
+# Sidebar menu
+sidemenu.insert_smenu()
+
 # Header and explanation
-st.markdown("<h1 style='text-align: center;'>Media Reports</h1>", 
-            unsafe_allow_html=True)
+# st.markdown("<h1 style='text-align: center;'>Media Reports</h1>", 
+#             unsafe_allow_html=True)
 st.markdown(
     """
     <p class='jtext'>

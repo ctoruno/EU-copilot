@@ -9,6 +9,7 @@ This version:   October 23rd, 2023
 
 import streamlit as st
 import pandas as pd
+from tools import sidemenu
 
 # Page config
 st.set_page_config(
@@ -20,6 +21,9 @@ st.set_page_config(
 with open("styles.css") as stl:
     st.markdown(f"<style>{stl.read()}</style>", 
                 unsafe_allow_html=True)
+
+# Sidebar menu
+sidemenu.insert_smenu()
     
 # Reading Codebook & DataMap
 @st.cache_data
@@ -37,8 +41,8 @@ def load_codebook():
 datamap  = load_datamap()
 codebook = load_codebook() 
 
-st.markdown("<h1 style='text-align: center;'>EU-S Copilot</h1>", 
-            unsafe_allow_html=True)
+# st.markdown("<h1 style='text-align: center;'>EU-S Copilot</h1>", 
+#             unsafe_allow_html=True)
 st.markdown(
     """
     <p class='jtext'>

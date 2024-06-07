@@ -8,6 +8,7 @@ This version:   October 23rd, 2023
 """
 
 import streamlit as st
+from tools import sidemenu
 
 # Page config
 st.set_page_config(
@@ -20,9 +21,12 @@ with open("styles.css") as stl:
     st.markdown(f"<style>{stl.read()}</style>", 
                 unsafe_allow_html=True)
 
+# Sidebar menu
+sidemenu.insert_smenu()
+
 # Header and explanation
-st.markdown("<h1 style='text-align: center;'>Information</h1>", 
-            unsafe_allow_html=True)
+# st.markdown("<h1 style='text-align: center;'>Information</h1>", 
+#             unsafe_allow_html=True)
 st.markdown(
     """
     <b>Author(s):</b> 

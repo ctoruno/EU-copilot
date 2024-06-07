@@ -13,22 +13,24 @@ import geopandas as gpd
 import streamlit as st
 import plotly.express as px
 from tools import viz_tools as viz
-from tools import passcheck
+from tools import passcheck, sidemenu
 
+# Page config
+st.set_page_config(
+    page_title = "Dashboard",
+    page_icon  = "📶",
+    # layout   = "wide"
+)
+
+# Reading CSS styles
+with open("styles.css") as stl:
+    st.markdown(f"<style>{stl.read()}</style>", 
+                unsafe_allow_html=True)
+
+# Sidebar menu
+sidemenu.insert_smenu()
 
 if passcheck.check_password():
-
-    # Page config
-    st.set_page_config(
-        page_title = "Dashboard",
-        page_icon  = "📶",
-        # layout   = "wide"
-    )
-
-    # Reading CSS styles
-    with open("styles.css") as stl:
-        st.markdown(f"<style>{stl.read()}</style>", 
-                    unsafe_allow_html=True)
         
     # Reading data
     @st.cache_data
@@ -65,8 +67,8 @@ if passcheck.check_password():
     eu_nuts       = load_mlayer()
 
     # Header and explanation
-    st.markdown("<h1 style='text-align: center;'>Dashboard</h1>", 
-                unsafe_allow_html=True)
+    # st.markdown("<h1 style='text-align: center;'>Dashboard</h1>", 
+    #             unsafe_allow_html=True)
     st.markdown(
         """
         <p class='jtext'>

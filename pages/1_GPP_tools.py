@@ -11,6 +11,7 @@ import pandas as pd
 import streamlit as st
 import tools.gpp_tools as gpp
 import copy
+from tools import sidemenu
 
 # Page config
 st.set_page_config(
@@ -23,9 +24,12 @@ with open("styles.css") as stl:
     st.markdown(f"<style>{stl.read()}</style>", 
                 unsafe_allow_html=True)
 
+# Sidebar menu
+sidemenu.insert_smenu()
+
 # Header and introduction
-st.markdown("<h1 style='text-align: center;'>GPP Tools</h1>", 
-            unsafe_allow_html=True)
+# st.markdown("<h1 style='text-align: center;'>GPP Tools</h1>", 
+#             unsafe_allow_html=True)
 st.markdown(
     """
     <p class='jtext'>

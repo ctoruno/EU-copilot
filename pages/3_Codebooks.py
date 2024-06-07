@@ -12,6 +12,7 @@ import numpy as np
 import re
 import streamlit as st
 import streamlit.components.v1 as stc
+from tools import sidemenu
 
 # Page config
 st.set_page_config(
@@ -22,6 +23,9 @@ st.set_page_config(
 with open("styles.css") as stl:
     st.markdown(f"<style>{stl.read()}</style>", 
                 unsafe_allow_html=True)
+
+# Sidebar menu
+sidemenu.insert_smenu()
 
 # Reading Codebook & DataMap
 @st.cache_data
@@ -45,8 +49,8 @@ def load_codebook_qrq():
 datamap  = load_datamap()
 
 # Header and explanation
-st.markdown("<h1 style='text-align: center;'>Codebook Explorer</h1>", 
-            unsafe_allow_html=True)
+# st.markdown("<h1 style='text-align: center;'>Codebook Explorer</h1>", 
+#             unsafe_allow_html=True)
 st.markdown(
     """
     <p class='jtext'>

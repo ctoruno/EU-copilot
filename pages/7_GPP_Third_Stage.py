@@ -20,25 +20,22 @@ import requests
 import json
 from io import BytesIO
 # from dotenv import load_dotenv
-from tools import passcheck
+from tools import passcheck, sidemenu
+
+# Page config
+st.set_page_config(
+    page_title = "GPP Third Stage",
+    page_icon  = "🇪🇺"
+)
+# Reading CSS styles
+with open("styles.css") as stl:
+    st.markdown(f"<style>{stl.read()}</style>", 
+                unsafe_allow_html=True)
+
+# Sidebar menu
+sidemenu.insert_smenu()
 
 if passcheck.check_password():
-
-    # Page config
-    st.set_page_config(
-        page_title = "GPP Third Stage",
-        page_icon  = "🇪🇺"
-    )
-    # Reading CSS styles
-    with open("styles.css") as stl:
-        st.markdown(f"<style>{stl.read()}</style>", 
-                    unsafe_allow_html=True)
-
-    # load_dotenv()
-    # dbtoken  = os.getenv("dbtoken")
-    # dbkey    = os.getenv("app_key")
-    # dbsecret = os.getenv("app_secret")
-
 
     # Defining auth secrets (when app is already deployed)
     dbtoken  = st.secrets["dbtoken"]
@@ -72,8 +69,8 @@ if passcheck.check_password():
     outliers = load_DBfile("outliers.xlsx", 0)
     intr = load_DBfile("GPP_internal_ranking.xlsx", 0)
 
-    st.markdown("<h1 style='text-align: center;'>GPP Third Stage Validation</h1>", 
-                unsafe_allow_html=True)
+    # st.markdown("<h1 style='text-align: center;'>GPP Third Stage Validation</h1>", 
+    #             unsafe_allow_html=True)
     st.markdown(
         """
         <p class='jtext'>
