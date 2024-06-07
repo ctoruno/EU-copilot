@@ -12,3 +12,4 @@ dropbox==12.0.0
 altair==5.2.0
 requests==2.26.0
 xlsxwriter==3.2.0
+st-pages==0.4.5
