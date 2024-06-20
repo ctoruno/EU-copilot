@@ -102,7 +102,7 @@ if passcheck.check_password():
     )
 
     # Defining tabs (Indicator Level)
-    eutab, countrytab, vartab, czechia_tab = st.tabs(["EU Overview", "Country Profile", "Indicator Level", "Czechia"])
+    eutab, countrytab, vartab = st.tabs(["EU Overview", "Country Profile", "Indicator Level"])
 
     with eutab:
 
@@ -433,10 +433,6 @@ if passcheck.check_password():
                 legend_html += f"<span>{entry['label']}</span></div>"
 
             legend_html += "</div>"
-
-
-
-
 
             # display legend
             st.markdown(legend_html, unsafe_allow_html=True)
@@ -791,163 +787,163 @@ if passcheck.check_password():
                 unsafe_allow_html=True
             )
 
-    with czechia_tab:
-        st.markdown(
-            f"""
-            <h3 style='text-align: left;'>
-                Does the regional grouping in Czechia affect the main findings?
-            </h3>
-            <p class='jtext'>
-                This tab is specially dedicated to answer that question. Here you can compare the data points for 
-                different grouping options and see how much do the resulting data points change. Take into account that
-                the resulng regions are not comparable across grouping options. Therefore, you need to focus on how much
-                do the distribution of data points change between options. 
-            </p>
-            <p class='jtext'>
-                You can also visualize the deviations from the national average. Given that the national average is fixed,
-                no matter which grouping option are you working, the deviations will give a different approach to answer
-                the question by using a fixed benchmark.
-            </p>
-            <h5 style='text-align: left;'>
-                Summary
-            </h5>
-            <ul>
-                <li>
-                    <p class='jtext'>
-                    Option 2 is slightly more efficient in reducing heterogeneity across regions. In other words, it reduces 
-                    the regional differences across topics. Option 1 is also a good alternative if we do not want to inflate 
-                    the regional differences. The "reduced" differences across regions seems to be common in the options where 
-                    all regions have at least 500 observations.
-                </p>
-                </li>
-                <li>
-                    <p class='jtext'>
-                        Option 5 is the option that produces the highest differences across regions. However, as mentioned above, 
-                        these differences would not affect the overall findings across thematic topics. Leaving Prague as a sole 
-                        region shows higher values for trust of authority figures, perception of corruption in institutions, and 
-                        other variables. This "amplified" differences could be due to higher SES and Urban levels, but also because 
-                        of the reduced sample for Prague (only 250 people).
-                    </p>
-                </li>
-                <li>
-                    <p class='jtext'>
-                        Option 3 and 4 show very marginal differences in the results.
-                    </p>
-                </li>
-            </ul>
-            <p class='jtext'>
-                Finally, we would like to warn about the potential sampling issues for choosing a grouping option in which a region is left alone. In this specific scenario, we would be dealing with a total sample size of 250 respondents for that region, which is even lower than the total samples that we have for some Caribbean countries. This would be a total sample of only 125 respondents for questions in which the questionnaire is split into two sub-groups: Civic Participation and Institutional Performance modules.
-            </p>
-            <p class='jtext'>
-                <b>At this point, our preference would be using Option 1 for grouping sub-national regions.</b>
-            </p>
-            """, 
-            unsafe_allow_html=True
-        )
+    # with czechia_tab:
+    #     st.markdown(
+    #         f"""
+    #         <h3 style='text-align: left;'>
+    #             Does the regional grouping in Czechia affect the main findings?
+    #         </h3>
+    #         <p class='jtext'>
+    #             This tab is specially dedicated to answer that question. Here you can compare the data points for 
+    #             different grouping options and see how much do the resulting data points change. Take into account that
+    #             the resulng regions are not comparable across grouping options. Therefore, you need to focus on how much
+    #             do the distribution of data points change between options. 
+    #         </p>
+    #         <p class='jtext'>
+    #             You can also visualize the deviations from the national average. Given that the national average is fixed,
+    #             no matter which grouping option are you working, the deviations will give a different approach to answer
+    #             the question by using a fixed benchmark.
+    #         </p>
+    #         <h5 style='text-align: left;'>
+    #             Summary
+    #         </h5>
+    #         <ul>
+    #             <li>
+    #                 <p class='jtext'>
+    #                 Option 2 is slightly more efficient in reducing heterogeneity across regions. In other words, it reduces 
+    #                 the regional differences across topics. Option 1 is also a good alternative if we do not want to inflate 
+    #                 the regional differences. The "reduced" differences across regions seems to be common in the options where 
+    #                 all regions have at least 500 observations.
+    #             </p>
+    #             </li>
+    #             <li>
+    #                 <p class='jtext'>
+    #                     Option 5 is the option that produces the highest differences across regions. However, as mentioned above, 
+    #                     these differences would not affect the overall findings across thematic topics. Leaving Prague as a sole 
+    #                     region shows higher values for trust of authority figures, perception of corruption in institutions, and 
+    #                     other variables. This "amplified" differences could be due to higher SES and Urban levels, but also because 
+    #                     of the reduced sample for Prague (only 250 people).
+    #                 </p>
+    #             </li>
+    #             <li>
+    #                 <p class='jtext'>
+    #                     Option 3 and 4 show very marginal differences in the results.
+    #                 </p>
+    #             </li>
+    #         </ul>
+    #         <p class='jtext'>
+    #             Finally, we would like to warn about the potential sampling issues for choosing a grouping option in which a region is left alone. In this specific scenario, we would be dealing with a total sample size of 250 respondents for that region, which is even lower than the total samples that we have for some Caribbean countries. This would be a total sample of only 125 respondents for questions in which the questionnaire is split into two sub-groups: Civic Participation and Institutional Performance modules.
+    #         </p>
+    #         <p class='jtext'>
+    #             <b>At this point, our preference would be using Option 1 for grouping sub-national regions.</b>
+    #         </p>
+    #         """, 
+    #         unsafe_allow_html=True
+    #     )
 
-        with st.expander("Click here to see the detail of current options"):
-            st.markdown(
-                f"""
-                <p class='jtext'>
-                    Available options:
-                </p>
-                <ul>
-                    <li>
-                        <b>T1</b>: Based on geography/population:
-                        <ul>
-                            <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
-                            <li>CZ03 (Southwest) + CZ04 (Northwest)</li>
-                            <li>CZ05 (Northeast) + CZ06 (Southeast)</li>
-                            <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
-                        </ul>
-                    </li>
-                    <br>
-                    <li>
-                        <b>T2</b>: Based on geography/population:
-                        <ul>
-                            <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
-                            <li>CZ03 (Southwest) + CZ06 (Southeast)</li>
-                            <li>CZ04 (Northwest) + CZ05 (Northeast)</li>
-                            <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
-                        </ul>
-                    </li>
-                    <br>
-                    <li>
-                        <b>T3</b>: Based on cultural divisions:
-                        <ul>
-                            <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
-                            <li>CZ03 (Southwest) + CZ04 (Northwest) + CZ05 (Northeast)</li>
-                            <li>CZ06 (Southeast) + CZ07 (Central Moravia)</li>
-                            <li>CZ08 (Moravian-Silesian)</li>
-                        </ul>
-                    </li>
-                    <br>
-                    <li>
-                        <b>T4</b>: Based on cultural divisions:
-                        <ul>
-                            <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
-                            <li>CZ03 (Southwest) + CZ04 (Northwest) + CZ05 (Northeast)</li>
-                            <li>CZ06 (Southeast)</li>
-                            <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
-                        </ul>
-                    </li>
-                    <br>
-                    <li>
-                        <b>T5</b>: Based on both geographic and cultural features:
-                        <ul>
-                            <li>CZ01 (Prague)</li>
-                            <li>CZ02 (Central Bohemia) + CZ03 (Southwest) + CZ04 (Northwest)</li>
-                            <li>CZ05 (Northeast) + CZ06 (Southeast)</li>
-                            <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
-                        </ul>
-                    </li>
-                </ul>
-                <br>
-                """, 
-                unsafe_allow_html=True
-            )
+    #     with st.expander("Click here to see the detail of current options"):
+    #         st.markdown(
+    #             f"""
+    #             <p class='jtext'>
+    #                 Available options:
+    #             </p>
+    #             <ul>
+    #                 <li>
+    #                     <b>T1</b>: Based on geography/population:
+    #                     <ul>
+    #                         <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
+    #                         <li>CZ03 (Southwest) + CZ04 (Northwest)</li>
+    #                         <li>CZ05 (Northeast) + CZ06 (Southeast)</li>
+    #                         <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
+    #                     </ul>
+    #                 </li>
+    #                 <br>
+    #                 <li>
+    #                     <b>T2</b>: Based on geography/population:
+    #                     <ul>
+    #                         <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
+    #                         <li>CZ03 (Southwest) + CZ06 (Southeast)</li>
+    #                         <li>CZ04 (Northwest) + CZ05 (Northeast)</li>
+    #                         <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
+    #                     </ul>
+    #                 </li>
+    #                 <br>
+    #                 <li>
+    #                     <b>T3</b>: Based on cultural divisions:
+    #                     <ul>
+    #                         <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
+    #                         <li>CZ03 (Southwest) + CZ04 (Northwest) + CZ05 (Northeast)</li>
+    #                         <li>CZ06 (Southeast) + CZ07 (Central Moravia)</li>
+    #                         <li>CZ08 (Moravian-Silesian)</li>
+    #                     </ul>
+    #                 </li>
+    #                 <br>
+    #                 <li>
+    #                     <b>T4</b>: Based on cultural divisions:
+    #                     <ul>
+    #                         <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
+    #                         <li>CZ03 (Southwest) + CZ04 (Northwest) + CZ05 (Northeast)</li>
+    #                         <li>CZ06 (Southeast)</li>
+    #                         <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
+    #                     </ul>
+    #                 </li>
+    #                 <br>
+    #                 <li>
+    #                     <b>T5</b>: Based on both geographic and cultural features:
+    #                     <ul>
+    #                         <li>CZ01 (Prague)</li>
+    #                         <li>CZ02 (Central Bohemia) + CZ03 (Southwest) + CZ04 (Northwest)</li>
+    #                         <li>CZ05 (Northeast) + CZ06 (Southeast)</li>
+    #                         <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
+    #                     </ul>
+    #                 </li>
+    #             </ul>
+    #             <br>
+    #             """, 
+    #             unsafe_allow_html=True
+    #         )
 
-        topics = [
-            "Trust", "Corruption Perceptions", "Justice System Evaluation", "Law Enforcement Performance",
-            "Criminal Justice Performance", "Perceptions on Authoritarian Behavior", "Civic Participation A", 
-            "Civic Participation B", "Corruption Perceptions"
-        ]
+    #     topics = [
+    #         "Trust", "Corruption Perceptions", "Justice System Evaluation", "Law Enforcement Performance",
+    #         "Criminal Justice Performance", "Perceptions on Authoritarian Behavior", "Civic Participation A", 
+    #         "Civic Participation B", "Corruption Perceptions"
+    #     ]
 
-        groupings = st.multiselect(
-            "Which grouping options do you want to visualize and compare",
-            ["T1", "T2", "T3", "T4", "T5"],
-            default = ["T1", "T5"],
-            max_selections = 2
-        )
-        stat = st.selectbox(
-            "What statistic would you like to visualize?",
-            ["Data Points", "Deviations from National Average"],
-            index = 0
-        )
+    #     groupings = st.multiselect(
+    #         "Which grouping options do you want to visualize and compare",
+    #         ["T1", "T2", "T3", "T4", "T5"],
+    #         default = ["T1", "T5"],
+    #         max_selections = 2
+    #     )
+    #     stat = st.selectbox(
+    #         "What statistic would you like to visualize?",
+    #         ["Data Points", "Deviations from National Average"],
+    #         index = 0
+    #     )
 
-        czechia_data = pd.merge(
-            pd.read_csv("inputs/cpoints.csv"),
-            outline[["n", "topic", "reportValues", "title", "subtitle", "direction"]],
-            how      = "left",
-            left_on  = "chart",
-            right_on = "n"
-        )
-        czechia_data = czechia_data[czechia_data["topic"].isin(topics)]
-        czechia_data["title"] = czechia_data["title"].str.replace(r"^Graph \d+\. ", "", regex=True)
-        czechia_data["grouping"] = czechia_data["region"].str[:2]
+    #     czechia_data = pd.merge(
+    #         pd.read_csv("inputs/cpoints.csv"),
+    #         outline[["n", "topic", "reportValues", "title", "subtitle", "direction"]],
+    #         how      = "left",
+    #         left_on  = "chart",
+    #         right_on = "n"
+    #     )
+    #     czechia_data = czechia_data[czechia_data["topic"].isin(topics)]
+    #     czechia_data["title"] = czechia_data["title"].str.replace(r"^Graph \d+\. ", "", regex=True)
+    #     czechia_data["grouping"] = czechia_data["region"].str[:2]
 
-        for topic in topics:
-            with st.empty():
-                st.markdown(
-                    f"""
-                    <h3 style='text-align: left;'>{topic}</h3>
-                    """, 
-                    unsafe_allow_html=True
-                )
-                dotties = viz.genDotties(
-                    data = czechia_data, 
-                    topic = topic, 
-                    groupings = groupings, 
-                    stat = stat
-                )
-                st.plotly_chart(dotties, use_container_width = True)
+    #     for topic in topics:
+    #         with st.empty():
+    #             st.markdown(
+    #                 f"""
+    #                 <h3 style='text-align: left;'>{topic}</h3>
+    #                 """, 
+    #                 unsafe_allow_html=True
+    #             )
+    #             dotties = viz.genDotties(
+    #                 data = czechia_data, 
+    #                 topic = topic, 
+    #                 groupings = groupings, 
+    #                 stat = stat
+    #             )
+    #             st.plotly_chart(dotties, use_container_width = True)
