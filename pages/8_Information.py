@@ -33,6 +33,7 @@ st.markdown(
     <ul>
         <li>Carlos Alberto Toruño Paniagua</li>
         <li>Dalia Habiby</li>
+        <li>Isabella Coddington</li>
     </ul>
 
     <h4>Source Code:</h4>
