@@ -317,7 +317,7 @@ if passcheck.check_password():
         with compare_tab:
             st.markdown(
                 """
-                This purpose of this tab is to explore the relationships between QRQ subpillar scores 
+                The purpose of this tab is to explore the relationships between QRQ subpillar scores 
                 and relevant GPP indicators. Once you have selected a subpillar, you will see that indicator
                 plotted against related GPP predictors (for the combined GPP/ QRQ data we currently have in our report
                 workflow). Please note that the values here are <i>regional values</i>. For more context on regional breakdowns

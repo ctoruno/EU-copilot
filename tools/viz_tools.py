@@ -467,12 +467,25 @@ def gen_compare_scatter(subset, section, gpp_indicator):
     # R-squared value
     r_squared = reg.score(X, y)
 
+    # color map
+    unique_countries = merged['country_name_ltn_qrq'].unique()
+    num_colors = len(unique_countries)
+    colors = px.colors.qualitative.Plotly
+
+    # If there are more unique countries than colors in the palette, generate more colors
+    if num_colors > len(colors):
+        from itertools import cycle
+        extended_colors = cycle(px.colors.qualitative.Vivid)
+        colors = [next(extended_colors) for _ in range(num_colors)]
+
+    color_map = {country: colors[i % len(colors)] for i, country in enumerate(unique_countries)}
+
     fig = px.scatter(
         merged,
         x = 'value2plot_qrq',
         y = 'value2plot_gpp',
         color = 'country_name_ltn_qrq',
-        #color_discrete_sequence=px.colors.qualitative.G10,
+        color_discrete_map=color_map,
         labels = {
             'value2plot_qrq': section + '(QRQ Score)',
             'value2plot_gpp': gpp_indicator + '(GPP value - %)',
@@ -484,8 +497,8 @@ def gen_compare_scatter(subset, section, gpp_indicator):
 
     fig.update_layout(
         showlegend = False,
-        height = 500,
-        width = 1100,
+        height = 450,
+        width = 800,
         yaxis = dict(range=[0,100]),
         xaxis = dict(range=[0.2,1])
     )
