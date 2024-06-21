@@ -19,8 +19,8 @@ def insert_smenu():
             Page("pages/7_GPP_Third_Stage.py", "GPP Third Stage", in_section=True),
             Page("pages/4_Media_Reports.py", "Media Reports", in_section=True),
             Section("Dashboard"),
-            Page("pages/5_Dashboard.py", "     GPP Dashboard", in_section=True),
-            Page("pages/9_QRQ_Dashboard.py", "    QRQ Dashboard", in_section=True),
+            Page("pages/5_Dashboard.py", "GPP Data", in_section=True),
+            Page("pages/9_QRQ_Dashboard.py", "QRQ Data", in_section=True),
             Page("pages/8_Information.py", "Information", in_section=False)
         ]
     )
