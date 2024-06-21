@@ -498,7 +498,7 @@ def gen_compare_scatter(subset, section, gpp_indicator):
     fig.update_layout(
         showlegend = False,
         height = 450,
-        width = 800,
+        width = 650,
         yaxis = dict(range=[0,100]),
         xaxis = dict(range=[0.2,1])
     )
