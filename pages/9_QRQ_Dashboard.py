@@ -38,6 +38,8 @@ if passcheck.check_password():
     def load_data():
         df = pd.read_csv("https://github.com/WJP-DAU/eu-thematic-reports/raw/main/data-viz/data_points.csv")
         df['n'] = df['chart']
+        # omitting Czechia for now since we anticipate that the regions will merge
+        df = df[df['country_name_ltn'] != 'Czechia']
         return df
     
     
@@ -338,8 +340,26 @@ if passcheck.check_password():
                     "Related GPP indicators: ",
                     (compare_subset.loc[compare_subset['description'] == 'gpp']
                     .drop_duplicates(subset = 'title')
-                    .title.to_list())
+                    .loc[compare_subset['value2plot'].notna(), 'title']
+                    .to_list())
                 )
+                
+                # handle the case where we have missing data in value2plot
+                initial_count = compare_subset.shape[0]
+                # grab missing data info so I can print it later
+                missing = compare_subset.loc[(compare_subset['description'] == 'qrq') & (compare_subset['value2plot'].isna())]
+                compare_subset = compare_subset[~((compare_subset['description'] == 'qrq') & (compare_subset['value2plot'].isna()))]
+                omitted_count = initial_count - compare_subset.shape[0]
+
+                missing_countries = missing['country_name_ltn'].tolist()
+                missing_nuts = missing['nuts_id'].tolist
+
+                if omitted_count > 0 :
+                    st.markdown(
+                       f"""Please note that this QRQ indicator has one or more missing values for country: {missing_countries}. 
+                        {omitted_count} observations were omitted to employ linear regression in this visualization. """,
+                        unsafe_allow_html=True
+                    )
 
                 compare_scatter = viz.gen_compare_scatter(compare_subset, section, gpp_indicator)
                 st.plotly_chart(compare_scatter)
@@ -356,8 +376,10 @@ if passcheck.check_password():
                 )
             else: 
                 st.markdown("""
-                        We don't currently have GPP data for the subpillar you have chosen integrated into this page of the Copilot. 
-                        Feel free to explore a different subpillar, or reference the GPP Dashboard for full GPP data.
+                        <hr>
+                        <p><strong>No available data</strong>: <em>We don't currently have GPP data for the subpillar you have chosen integrated into this page of the Copilot. 
+                        Feel free to explore a different subpillar, or reference the GPP Dashboard for full GPP data.</em></p>
+                        <hr>
                         """,
                         unsafe_allow_html=True
                     )
@@ -382,7 +404,7 @@ if passcheck.check_password():
         
         chapter = st.selectbox(
         "Please select a chapter from the list below: ",
-        (outline.loc[outline["report"] == theme]
+        (outline.loc[(outline["report"] == theme) & (outline['chapter'] != 'Chapter III. Safety')]
         .drop_duplicates(subset = "chapter").chapter.to_list()),
         key = 'country_profile_chapter'
         )
@@ -428,3 +450,14 @@ if passcheck.check_password():
                     
                 rankings = viz.gen_qrq_rankins(filtered_data, country)
                 st.plotly_chart(rankings)
+    
+    st.markdown("""
+        <hr>
+        <p><strong>Important</strong>: <em>QRQ data is still being validated, and as such we expect that 
+                scores might change, especially for regions and topics where we have relatively low expert counts. 
+                While we encourage the use of this dashboard as a tool to collect preliminary QRQ insights, please do 
+                not assume that it is reflective of final data. Additionally, since we expect that Czechia's nuts regions will 
+                merge for QRQ analysis in the near future, it has been omitted from the whole QRQ dashboard. We will add it back once 
+                regions and scores are finalized.</em></p>
+        <hr>""",
+        unsafe_allow_html=True)

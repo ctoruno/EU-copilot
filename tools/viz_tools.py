@@ -457,6 +457,7 @@ def gen_compare_scatter(subset, section, gpp_indicator):
         )
     
     # regress
+    merged.dropna(subset=['value2plot_qrq', 'value2plot_gpp'], inplace=True)
     X = merged['value2plot_qrq'].values.reshape(-1, 1)
     y = merged['value2plot_gpp'].values
 
@@ -486,21 +487,18 @@ def gen_compare_scatter(subset, section, gpp_indicator):
         y = 'value2plot_gpp',
         color = 'country_name_ltn_qrq',
         color_discrete_map=color_map,
-        labels = {
-            'value2plot_qrq': section + '(QRQ Score)',
-            'value2plot_gpp': gpp_indicator + '(GPP value - %)',
-            'country_name_ltn': 'nameShort'
-        },
         custom_data=['nameSHORT_qrq','country_name_ltn_qrq', 'value2plot_qrq', 'value2plot_gpp', 'subtitle_gpp'],
-        title = f'Scatter Plot of {section} (QRQ) vs {gpp_indicator} (GPP)'
+        title = f'{section} (QRQ) vs {gpp_indicator} (GPP)',
     )
 
     fig.update_layout(
         showlegend = False,
         height = 450,
-        width = 650,
-        yaxis = dict(range=[0,100]),
-        xaxis = dict(range=[0.2,1])
+        width = 750,
+        yaxis = dict(range=[0,100], title_standoff=25),
+        xaxis = dict(range=[0,1.1], title_standoff=25),
+        yaxis_title = f"{gpp_indicator}<br>(GPP Value - %)",
+        xaxis_title = f"{section} (QRQ Score)"
     )
 
     fig.update_traces(hovertemplate="<br>".join([
@@ -653,7 +651,7 @@ def genQRQBars(data, cpal, level):
             margin = {"r":0,"t":0,"l":0,"b":0},
             xaxis  = dict(
                 range = [0, 1],
-                dtick = 20
+                dtick = .2
             ),
             yaxis = dict(
                 tickmode = "linear"
@@ -687,7 +685,7 @@ def genQRQBars(data, cpal, level):
             margin = {"r":0,"t":0,"l":0,"b":0},
             xaxis  = dict(
                 range = [0, 1],
-                dtick = 20
+                dtick = .20
             ),
             yaxis = dict(
                 tickmode = "linear"
