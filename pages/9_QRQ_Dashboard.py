@@ -328,23 +328,52 @@ if passcheck.check_password():
                 """,
                 unsafe_allow_html=True
             )
-
-            # subset to send to viz function
+            # filter for regional data
             regional = combined.loc[combined['level'] == 'regional']
-
-        
             # filter for section
             compare_subset = regional.loc[regional['section'] == section]
-            if len(compare_subset['title'].unique()) > 1:
-                gpp_indicator = st.selectbox(
-                    "Related GPP indicators: ",
-                    (compare_subset.loc[compare_subset['description'] == 'gpp']
-                    .drop_duplicates(subset = 'title')
-                    .loc[compare_subset['value2plot'].notna(), 'title']
-                    .to_list())
-                )
+
+            if len(compare_subset['title'].unique()) > 1:       
+            # Creating dropdown options
+                options = []
+                title_mapping = {}  
+
+                filtered_subset = compare_subset.drop_duplicates(subset='title')
+                for _, row in filtered_subset.iterrows():
+                    if pd.notna(row['value2plot']):
+                        options.append(row['title'])
+                        title_mapping[row['title']] = (row['title'], 'value2plot')
+                    if pd.notna(row['value2plot_id1']):
+                        trust_title = f"{row['title']} (Trust)"
+                        options.append(trust_title)
+                        title_mapping[trust_title] = (row['title'], 'value2plot_id1')
+                    if pd.notna(row['value2plot_id2']):
+                        corruption_title = f"{row['title']} (Corruption Perceptions)"
+                        options.append(corruption_title)
+                        title_mapping[corruption_title] = (row['title'], 'value2plot_id2')
+
+                # selectbox for gpp
+                gpp_indicator = st.selectbox("Related GPP indicators: ", options)
+                original_title, value2plot_column = title_mapping[gpp_indicator]
+
+                # modify compare subset to send to plotting function
+                new_rows = []
+                for _, row in compare_subset.iterrows():
+                    if row['title'] == original_title:
+                        new_row = row.copy()
+                        if value2plot_column == 'value2plot_id1':
+                            new_row['title'] = f"{row['title']} (Trust)"
+                            new_row['value2plot'] = row['value2plot_id1'] * 100
+                        elif value2plot_column == 'value2plot_id2':
+                            new_row['title'] = f"{row['title']} (Corruption Perceptions)"
+                            new_row['value2plot'] = row['value2plot_id2'] * 100
+                        new_rows.append(new_row)
+                    else:
+                        new_rows.append(row)
+
+                    compare_subset = pd.DataFrame(new_rows)
                 
-                # handle the case where we have missing data in value2plot
+                # handle the case where we have missing data in value2plot for qrq
                 initial_count = compare_subset.shape[0]
                 # grab missing data info so I can print it later
                 missing = compare_subset.loc[(compare_subset['description'] == 'qrq') & (compare_subset['value2plot'].isna())]
@@ -352,12 +381,13 @@ if passcheck.check_password():
                 omitted_count = initial_count - compare_subset.shape[0]
 
                 missing_countries = missing['country_name_ltn'].tolist()
-                missing_nuts = missing['nuts_id'].tolist
+                missing_nuts = missing['nuts_id'].tolist()
 
                 if omitted_count > 0 :
                     st.markdown(
-                       f"""Please note that this QRQ indicator has one or more missing values for country: {missing_countries}. 
-                        {omitted_count} observations were omitted to employ linear regression in this visualization. """,
+                       f"""Please note that this QRQ indicator has one or more missing values for country: {missing_countries} and 
+                       region {missing_nuts}. {omitted_count} observations were omitted to employ linear regression in this visualization.
+                         """,
                         unsafe_allow_html=True
                     )
 
