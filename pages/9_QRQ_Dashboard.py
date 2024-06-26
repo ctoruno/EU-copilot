@@ -131,6 +131,7 @@ if passcheck.check_password():
         theme = st.selectbox(
         "Please select a report from the list below: ",
         (outline.drop_duplicates(subset = "report").report.to_list()), 
+        index = 0,
         key = 'indicator_level_theme'
         )
 
@@ -139,6 +140,7 @@ if passcheck.check_password():
         "Please select a chapter from the list below: ",
         (outline.loc[outline["report"] == theme]
          .drop_duplicates(subset = "chapter").chapter.to_list()), 
+         index = 0,
          key = 'indicator_level_chapter'
         )
 
@@ -148,6 +150,7 @@ if passcheck.check_password():
         (outline.loc[outline["chapter"] == chapter]
          .drop_duplicates(subset = "section")
          .section.to_list()),
+         index = 1,
          key = 'indicator_level_section'
         )
 
@@ -380,6 +383,7 @@ if passcheck.check_password():
                 compare_subset = compare_subset[~((compare_subset['description'] == 'qrq') & (compare_subset['value2plot'].isna()))]
                 omitted_count = initial_count - compare_subset.shape[0]
 
+                # store missing country name and region name
                 missing_countries = missing['country_name_ltn'].tolist()
                 missing_nuts = missing['nuts_id'].tolist()
 
