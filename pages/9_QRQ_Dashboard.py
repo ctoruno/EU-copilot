@@ -16,12 +16,14 @@ import streamlit as st
 import plotly.express as px
 from tools import viz_tools as viz
 from tools import passcheck, sidemenu
+import dropbox
+import dropbox.files
+from io import BytesIO
 
 # page configuration
 st.set_page_config(
     page_title= "QRQ Dashboard",
     page_icon = "📶",
-
 )
 
 # reading css styles
@@ -33,28 +35,41 @@ with open("styles.css") as stl:
 sidemenu.insert_smenu()
 
 if passcheck.check_password():
-    # read data
+    # Defining auth secrets (when app is already deployed)
+    dbtoken  = st.secrets["dbtoken"]
+    dbkey    = st.secrets["app_key"]
+    dbsecret = st.secrets["app_secret"]
+
+    atoken = passcheck.retrieve_DBtoken(dbkey, dbsecret, dbtoken)
+
+        # Accessing Dropbox
+    dbx = dropbox.Dropbox(atoken)
+
+    # Defining a loading function
     @st.cache_data
-    def load_data():
-        df = pd.read_csv("https://github.com/WJP-DAU/eu-thematic-reports/raw/main/data-viz/data_points.csv")
-        df['n'] = df['chart']
-        # omitting Czechia for now since we anticipate that the regions will merge
-        df = df[df['country_name_ltn'] != 'Czechia']
+    def load_DBfile(file, format):
+
+        # Accessing Dropbox files
+        _, res = dbx.files_download(f"/{file}")
+        data = res.content
+
+        # Reading data frames
+        with BytesIO(data) as file:
+            if format == 'excel':
+                df = pd.read_excel(file)
+            if format == 'csv':
+                df = pd.read_csv(file)
+
         return df
+    
+
     
     
     @st.cache_data
     def load_rlabels():
         df = pd.read_excel("https://github.com/WJP-DAU/eu-thematic-reports/raw/main/data-viz/inputs/region_labels.xlsx")
         return df
-    
-    # loading outline
-    @st.cache_data
-    def load_outline():
-        df = pd.read_excel("https://github.com/WJP-DAU/eu-thematic-reports/raw/main/data-viz/inputs/report_outline.xlsx")
-        print("columns: ")
-        print(df.info())
-        return df
+
     
     # load mlayer for map
     @st.cache_data
@@ -68,32 +83,42 @@ if passcheck.check_password():
             return value
         if direction == "negative":
             return 1-value
-        
-    data_points = load_data()
+    data_points   = load_DBfile("data4web_qrq.csv", format = 'csv')
+    outline       = load_DBfile("report_outline.xlsx", format = 'excel')
+    data_points_gpp = load_DBfile("data4web_gpp.csv", format = 'csv')
+    data_points_gpp = (
+        data_points_gpp
+        .loc[data_points_gpp["demographic"] == "Total Sample"]
+    )
     region_labels = load_rlabels()
-    outline = load_outline()
-    # remove access to justice from outline for now
+    # omit A2J for now
     outline = outline.loc[outline['chapter'] != 'Access to Justice']
-    eu_nuts = load_mlayer()
-    # get combined data with stuff we want from outline
-    combined = pd.merge(
-            (
-                data_points.copy()
-            ),
-            (
-                outline[["report", "chapter", "section", "title", "reportValue", "direction", "subtitle", "n" ]]
-            ),
-            how = 'left',
-            left_on = 'chart',
-            right_on = 'n'
-        )
-        
-    # define qrq or gpp - qrq has section = title
-    combined['description'] = np.where(combined['section'] == combined['title'], 'qrq', 'gpp')
-    # convert to percentage for gpp
-    combined['value2plot'] = np.where(combined["description"] == 'gpp', combined['value2plot']*100, combined['value2plot'])
-    # dataframe with qrq data only
-    data_qrq = combined.loc[combined['description'] == 'qrq']
+    eu_nuts       = load_mlayer()
+    data_points.rename(columns = {
+        'theme': 'report',
+        'pillar_name': 'chapter',
+        'subpillar_name': 'title',
+        'score': 'value2plot'
+    }, inplace = True)
+
+    data_points['section'] = data_points['title']
+
+    print("data_points.info():")
+    print(data_points.info())
+
+    data_points_gpp.rename(columns = {
+        'chapter': 'report',
+        'section': 'chapter',
+        'subsection': 'section',
+        'value': 'value2plot'
+    }, inplace = True)
+    
+    #
+    # get the direction from the outline
+    data_points = pd.merge(data_points, outline[['title','subtitle', 'direction', 'reportValue']], on = 'title', how = 'left')
+
+    data_points_gpp = pd.merge(data_points_gpp, outline[['title', 'direction', 'reportValue']], on = 'title', how = 'left' )
+    data_points_gpp['value2plot'] = data_points_gpp['value2plot']*100
 
 
     st.markdown(
@@ -130,7 +155,7 @@ if passcheck.check_password():
     # get the report in the outline
         theme = st.selectbox(
         "Please select a report from the list below: ",
-        (outline.drop_duplicates(subset = "report").report.to_list()), 
+        (data_points.drop_duplicates(subset = "report").report.to_list()), 
         index = 0,
         key = 'indicator_level_theme'
         )
@@ -138,7 +163,7 @@ if passcheck.check_password():
         # chapter
         chapter = st.selectbox(
         "Please select a chapter from the list below: ",
-        (outline.loc[outline["report"] == theme]
+        (data_points.loc[data_points["report"] == theme]
          .drop_duplicates(subset = "chapter").chapter.to_list()), 
          index = 0,
          key = 'indicator_level_chapter'
@@ -147,7 +172,7 @@ if passcheck.check_password():
         # get the pillar
         section = st.selectbox(
         "Please select an indicator from the list below:",
-        (outline.loc[outline["chapter"] == chapter]
+        (data_points.loc[data_points["chapter"] == chapter]
          .drop_duplicates(subset = "section")
          .section.to_list()),
          index = 1,
@@ -162,35 +187,35 @@ if passcheck.check_password():
         if country_focused == True:
             country_select = st.multiselect(
             "(Optional) Select a country: ",
-            (data_qrq
-             .drop_duplicates(subset = 'country_name_ltn')
-             .country_name_ltn.to_list())
+            (data_points
+             .drop_duplicates(subset = 'country')
+             .country.to_list())
             )
 
 
 
     # get the chart number
-        chart_n = outline.loc[((outline['chapter'] == chapter) & (outline['title'] == section) &
-                (outline['description'] == 'QRQ')), 'n'].iloc[0]
+        data_points = data_points.loc[(data_points['report'] == theme) & (data_points['chapter'] == chapter)]
+        chart_n = data_points.loc[data_points['title'] == section, 'title'].iloc[0]
     
 
         mapData = (
-            data_qrq.copy()
-            .loc[(data_qrq["chart"] == chart_n) & (data_qrq["level"] == "regional")]
+            data_points.copy()
+            .loc[(data_points["title"] == chart_n) & (data_points["level"] == "regional")]
         )
 
 
 
         country_avgs = (
-            data_qrq.copy()
-            .loc[(data_qrq["chart"] == chart_n) & (data_qrq["level"] == "national")]
+            data_points.copy()
+            .loc[(data_points["title"] == chart_n) & (data_points["level"] == "national")]
             .reset_index()
         )
 
 
         eu_avg = (
-            data_qrq.copy()
-            .loc[(data_qrq["chart"] == chart_n) & (data_qrq['level'] == "eu")]
+            data_points.copy()
+            .loc[(data_points["title"] == chart_n) & (data_points['level'] == "eu")]
             .reset_index()
         )
 
@@ -198,12 +223,12 @@ if passcheck.check_password():
         if country_focused == True and len(country_select) > 0:
             mapData = (
                 mapData.copy()
-                .loc[mapData['country_name_ltn'].isin(country_select)]
+                .loc[mapData['country'].isin(country_select)]
                 .reset_index()
             )
             country_avgs = (
                 country_avgs.copy()
-                .loc[country_avgs['country_name_ltn'].isin(country_select)]
+                .loc[country_avgs['country'].isin(country_select)]
                 .reset_index()
             )
     
@@ -213,20 +238,16 @@ if passcheck.check_password():
             .sort_values(by = 'value2plot', ascending = True)
         )
 
-
-        print("Checking data4bars: ")
-        print(data4bars.head())
-
         # Defining Annotations
-        title    = outline.loc[outline["n"] == chart_n].title.iloc[0]
-        subtitle = outline.loc[outline["n"] == chart_n].subtitle.iloc[0]
-        reportV  = outline.loc[outline["n"] == chart_n].reportValue.iloc[0]
+        title    = data_points.loc[data_points["title"] == chart_n].title.iloc[0]
+        subtitle = data_points.loc[data_points["title"] == chart_n].subtitle.iloc[0]
+        reportV  = data_points.loc[data_points["title"] == chart_n].reportValue.iloc[0]
 
         # defining tabs for indicator level
         map_tab, bars_tab, table_tab, compare_tab = st.tabs(["Sub-national Summary","National Synopsis","Detail", "GPP Contextualization"])
 
 
-        direction   =   outline.loc[outline["n"] == chart_n].direction.iloc[0]
+        direction   =   data_points.loc[data_points["title"] == chart_n].direction.iloc[0]
         color_codes  = ["#E03849", "#FF7900", "#FFC818", "#46B5FF", "#0C75B6", "#18538E"]
         value_breaks = [0.00, 0.20, 0.40, 0.60, 0.80, 1.00]
         if direction == "Negative":
@@ -276,7 +297,7 @@ if passcheck.check_password():
                     ["Country/Region", "Score (Descending)", "Score (Ascending)"]
                 )
                 if sorting == "Country/Region":
-                    svar = ["country_name_ltn", "nuts_id"]
+                    svar = ["country", "nuts_id"]
                     asc  = True
                 if sorting == "Score (Descending)":
                     svar = ["value2plot"]
@@ -286,13 +307,13 @@ if passcheck.check_password():
                     asc  = True
                 data4table = (
                     mapData
-                    .loc[:,["country_name_ltn", "nameSHORT", "nuts_id", "value2plot"]]
+                    .loc[:,["country", "nuts_ltn", "nuts_id", "value2plot"]]
                     .sort_values(svar, ascending = asc)
                     .reset_index(drop = True)
                 )
                 data4table.rename(columns={
-                'country_name_ltn':'Country',
-                'nameSHORT':'Region',
+                'country':'Country',
+                'nuts_ltn':'Region',
                 'nuts_id': 'NUTS ID'
                 }, inplace=True)
                 data4table.index += 1
@@ -331,8 +352,13 @@ if passcheck.check_password():
                 """,
                 unsafe_allow_html=True
             )
+            # label each data source
+            data_points_gpp['description'] = 'gpp'
+            data_points['description'] = 'qrq'
+
+            full = pd.concat([data_points, data_points_gpp])
             # filter for regional data
-            regional = combined.loc[combined['level'] == 'regional']
+            regional = full.loc[full['level'] == 'regional']
             # filter for section
             compare_subset = regional.loc[regional['section'] == section]
 
@@ -343,38 +369,38 @@ if passcheck.check_password():
 
                 filtered_subset = compare_subset.drop_duplicates(subset='title')
                 for _, row in filtered_subset.iterrows():
-                    if pd.notna(row['value2plot']):
-                        options.append(row['title'])
-                        title_mapping[row['title']] = (row['title'], 'value2plot')
-                    if pd.notna(row['value2plot_id1']):
-                        trust_title = f"{row['title']} (Trust)"
-                        options.append(trust_title)
-                        title_mapping[trust_title] = (row['title'], 'value2plot_id1')
-                    if pd.notna(row['value2plot_id2']):
-                        corruption_title = f"{row['title']} (Corruption Perceptions)"
-                        options.append(corruption_title)
-                        title_mapping[corruption_title] = (row['title'], 'value2plot_id2')
+                     if pd.notna(row['value2plot']) & (row['title']!= section):
+                         options.append(row['title'])
+                         title_mapping[row['title']] = (row['title'], 'value2plot')
+                #     if pd.notna(row['value2plot_id1']):
+                #         trust_title = f"{row['title']} (Trust)"
+                #         options.append(trust_title)
+                #         title_mapping[trust_title] = (row['title'], 'value2plot_id1')
+                #     if pd.notna(row['value2plot_id2']):
+                #         corruption_title = f"{row['title']} (Corruption Perceptions)"
+                #         options.append(corruption_title)
+                #         title_mapping[corruption_title] = (row['title'], 'value2plot_id2')
 
                 # selectbox for gpp
                 gpp_indicator = st.selectbox("Related GPP indicators: ", options)
                 original_title, value2plot_column = title_mapping[gpp_indicator]
 
                 # modify compare subset to send to plotting function
-                new_rows = []
-                for _, row in compare_subset.iterrows():
-                    if row['title'] == original_title:
-                        new_row = row.copy()
-                        if value2plot_column == 'value2plot_id1':
-                            new_row['title'] = f"{row['title']} (Trust)"
-                            new_row['value2plot'] = row['value2plot_id1'] * 100
-                        elif value2plot_column == 'value2plot_id2':
-                            new_row['title'] = f"{row['title']} (Corruption Perceptions)"
-                            new_row['value2plot'] = row['value2plot_id2'] * 100
-                        new_rows.append(new_row)
-                    else:
-                        new_rows.append(row)
+                # new_rows = []
+                # for _, row in compare_subset.iterrows():
+                #     if row['title'] == original_title:
+                #         new_row = row.copy()
+                #         if value2plot_column == 'value2plot_id1':
+                #             new_row['title'] = f"{row['title']} (Trust)"
+                #             new_row['value2plot'] = row['value2plot_id1'] * 100
+                #         elif value2plot_column == 'value2plot_id2':
+                #             new_row['title'] = f"{row['title']} (Corruption Perceptions)"
+                #             new_row['value2plot'] = row['value2plot_id2'] * 100
+                #         new_rows.append(new_row)
+                #     else:
+                #         new_rows.append(row)
 
-                    compare_subset = pd.DataFrame(new_rows)
+                #     compare_subset = pd.DataFrame(new_rows)
                 
                 # handle the case where we have missing data in value2plot for qrq
                 initial_count = compare_subset.shape[0]
@@ -384,7 +410,7 @@ if passcheck.check_password():
                 omitted_count = initial_count - compare_subset.shape[0]
 
                 # store missing country name and region name
-                missing_countries = missing['country_name_ltn'].tolist()
+                missing_countries = missing['country'].tolist()
                 missing_nuts = missing['nuts_id'].tolist()
 
                 if omitted_count > 0 :
@@ -424,21 +450,21 @@ if passcheck.check_password():
         country = st.selectbox(
             "Please select a country from the list below: ",
             (
-                data_qrq.drop_duplicates(subset = "country_name_ltn")
-                .country_name_ltn.to_list()), key = 'country_profile_country'
+                data_points.drop_duplicates(subset = "country")
+                .country.to_list()), key = 'country_profile_country'
             )
 
         
         theme = st.selectbox(
         "Please select a report from the list below: ",
-        (outline.copy().drop_duplicates(subset = "report").report.to_list()),
+        (data_points.copy().drop_duplicates(subset = "report").report.to_list()),
         key = 'country_profile_theme'
         )
 
         
         chapter = st.selectbox(
         "Please select a chapter from the list below: ",
-        (outline.loc[(outline["report"] == theme) & (outline['chapter'] != 'Chapter III. Safety')]
+        (data_points.loc[(data_points["report"] == theme) & (data_points['chapter'] != 'Chapter III. Safety')]
         .drop_duplicates(subset = "chapter").chapter.to_list()),
         key = 'country_profile_chapter'
         )
@@ -454,7 +480,7 @@ if passcheck.check_password():
                 idea of the deviations between regional scores.""", 
                 unsafe_allow_html=True)
             
-                country_qrq_df = data_qrq.loc[(data_qrq['level'] == 'national') | (data_qrq['level'] == 'regional')]
+                country_qrq_df = data_points.loc[(data_points['level'] == 'national') | (data_points['level'] == 'regional')]
 
             # subset by country
                 scatter = viz.QRQ_country_scatter(df = country_qrq_df, country = country, chapter = chapter)
@@ -463,7 +489,7 @@ if passcheck.check_password():
 
         with eu_dist:
                 # generate rankings based on qrq scores
-                national = data_qrq.loc[data_qrq['level'] == "national"]
+                national = data_points.loc[data_points['level'] == "national"]
 
 
                 filtered_data = national.loc[(national['report'] == theme) & (
@@ -476,7 +502,7 @@ if passcheck.check_password():
                     if filtered_data.loc[filtered_data['title'] == subpillar, 'direction'].iloc[0] == 'positive':
                         filtered_data.loc[filtered_data['title'] == subpillar, 'ranking'] = filtered_data.loc[
                             filtered_data['title'] == subpillar].groupby(
-                                ['chapter', 'section','chart'])['value2plot'].rank(method = 'first', ascending = False).astype(int)    
+                                ['chapter', 'section','title'])['value2plot'].rank(method = 'first', ascending = False).astype(int)    
                     else:
                         filtered_data.loc[filtered_data['title'] == subpillar, 'ranking'] = filtered_data.loc[
                             filtered_data['title'] == subpillar].groupby(
