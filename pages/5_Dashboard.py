@@ -19,8 +19,6 @@ import dropbox
 import dropbox.files
 from io import BytesIO
 
-
-
 # Page config
 st.set_page_config(
     page_title = "Dashboard",
@@ -63,20 +61,19 @@ if passcheck.check_password():
                 df = pd.read_csv(file)
 
         return df
-        
-   
 
     @st.cache_data
     def load_rlabels():
         df = pd.read_excel("https://github.com/WJP-DAU/eu-gpp-report/raw/main/data-viz/inputs/region_labels.xlsx")
         return df
 
-  
-
     @st.cache_data
     def load_mlayer():
-        df = gpd.read_file("https://raw.githubusercontent.com/ctoruno/ROLI-Map-App/main/Data/EU_base_map.geojson").to_crs(epsg=4326)
+        df = gpd.read_file("inputs/EU_base_map.geojson").to_crs(epsg=4326)
         return df
+    # def load_mlayer():
+    #     df = gpd.read_file("https://raw.githubusercontent.com/ctoruno/ROLI-Map-App/main/Data/EU_base_map.geojson").to_crs(epsg=4326)
+    #     return df
 
     def realign_data(value, direction):
         if direction == "positive":
@@ -87,9 +84,9 @@ if passcheck.check_password():
             return value
         
     data_points   = load_DBfile("data4web_gpp.csv", format = 'csv')
+    # data_points   = pd.read_csv("inputs/data4web_gpp.csv")
     region_labels = load_rlabels()
     outline       = load_DBfile("report_outline.xlsx", format = 'excel')
-    # omit A2J for now
     eu_nuts       = load_mlayer()
     data_points.rename(columns = {
         'chapter': 'report',
@@ -97,11 +94,8 @@ if passcheck.check_password():
         'subsection': 'section',
         'value': 'value2plot'
     }, inplace = True)
-
-
     
-    
-    # get the direction from the outline
+    # Retrieving Data Points + Disaggregations
     data_points = pd.merge(data_points, outline[['title','direction', 'reportValue']], on = 'title', how = 'left')
     data_points_disag = data_points.copy()
     full_gpp = data_points.copy()
@@ -109,19 +103,40 @@ if passcheck.check_password():
     data_points['value2plot'] = data_points['value2plot'] * 100
     data_points = data_points.drop_duplicates()
     data_points = data_points[data_points['demographic'] == "Total Sample"]
-
-
     data_points_disag['value2plot'] = data_points_disag['value2plot'] * 100
     data_points_disag = data_points_disag.drop_duplicates()
-    print(data_points_disag['demographic'].value_counts())
 
+    eu_data = (
+        data_points.copy()
+        .loc[(data_points['level'] == "eu")]
+        .reset_index()
+    )
 
+    eu_data["value_realign"] = (
+        eu_data.apply(lambda row: pd.Series(realign_data(
+                row["value2plot"], 
+                row["direction"], 
+            )), axis = 1)
+    )
 
+    eu_data = (
+        eu_data
+        .sort_values(by = "value_realign", ascending = False)
+        .reset_index(drop = True)
+    )
 
+    country_data = (
+        data_points.copy()
+        .loc[(data_points["level"] == "national")]
+        .reset_index()
+    )
+
+    country_data["value_realign"] = country_data.apply(lambda row: pd.Series(realign_data(
+                    row["value2plot"], 
+                    row["direction"], 
+                )), axis = 1)
 
     # Header and explanation
-    # st.markdown("<h1 style='text-align: center;'>Dashboard</h1>", 
-    #             unsafe_allow_html=True)
     st.markdown(
         """
         <p class='jtext'>
@@ -154,264 +169,8 @@ if passcheck.check_password():
         unsafe_allow_html = True
     )
 
-
     # Defining tabs (Indicator Level)
     countrytab, vartab = st.tabs(["Country Profile", "Indicator Level"])
-
-    # with eutab:
-
-    #     # Subsetting and preparing data
-    eu_data = (
-            data_points.copy()
-            .loc[(data_points['level'] == "eu")]
-            .reset_index()
-        )
-
-    eu_data["value_realign"] = eu_data.apply(lambda row: pd.Series(realign_data(
-                  row["value2plot"], 
-                 row["direction"], 
-              )), axis = 1)
-        
-
-    eu_data = (
-           eu_data
-           .sort_values(by = "value_realign", ascending = False)
-           .reset_index(drop = True)
-       )
-    
-        # subsection_summary = (
-        #     eu_data.copy()
-        #     .groupby("title")
-        #     .agg(average_value = ("value_realign", "mean"))
-        #     .sort_values(by = "average_value", ascending = False)
-        #     .reset_index()
-        # )
-
-    #     print(subsection_summary)
-
-    country_data = (
-            data_points.copy()
-            .loc[(data_points["level"] == "national")]
-            .reset_index()
-        )
-
-    country_data["value_realign"] = country_data.apply(lambda row: pd.Series(realign_data(
-                    row["value2plot"], 
-                    row["direction"], 
-                )), axis = 1)
-
-    #     # Content
-    #     color_codes   = ["#E03849", "#FF7900", "#FFC818", "#46B5FF", "#0C75B6", "#18538E"]
-    #     value_breaks  = [0.00, 0.20, 0.40, 0.60, 0.80, 1.00]
-    #     color_palette = [[color, value] for color, value in zip(value_breaks, color_codes)]
-        
-    #     st.markdown(
-    #         f"""
-    #         <h4>How's the region performing?</h4>
-    #         <p class='jtext'>
-    #             In a nutshell, the data collected in the European Union indicates that the region is 
-    #             performing quite well in the following four thematic topics (sub-sections):
-    #         </p>
-    #         """, 
-    #         unsafe_allow_html=True
-    #     )
-    #     col = st.columns(2)
-    #     for metric in [0, 1]:
-    #         with col[metric]:
-    #             viz.genMetrics(metric, df = subsection_summary, d = "green")
-    #     col = st.columns(2)
-    #     for metric in [2, 3]:
-    #         with col[metric-2]:
-    #             viz.genMetrics(metric, df = subsection_summary, d = "green")
-    #     st.markdown(
-    #         f"""
-    #         <p class='jtext'>
-    #             On the other hand, the data also indicates that the region is performing quite low in 
-    #             the following four topics (sub-sections): 
-    #         </p>
-    #         """, 
-    #         unsafe_allow_html=True
-    #     )
-    #     col = st.columns(2)
-    #     for metric in [-1, -2]:
-    #         with col[abs(metric)-1]:
-    #             viz.genMetrics(metric, df = subsection_summary, d = "red")
-    #     col = st.columns(2)
-    #     for metric in [-3, -4]:
-    #         with col[abs(metric)-3]:
-    #             viz.genMetrics(metric, df = subsection_summary, d = "red")
-    #     with st.expander("Technical note here"):
-    #         st.markdown(
-    #             f"""
-    #             <p class='jtext'>
-    #                 To arrive to the values shown above, the following steps were taken:
-    #                 <ol>
-    #                     <li>
-    #                         The responses for individual respondents were aggregated using simple averages to
-    #                         get a sub-national average for individual indicators.
-    #                     </li>
-    #                     <li>
-    #                         Sub-national values were aggregated to get a national average. The total population of
-    #                         each region was used as a weight during this step.
-    #                     </li>
-    #                     <li>
-    #                         National values were aggregated to get a regional (EU) average using a simple mean.
-    #                     </li>
-    #                     <li>
-    #                         Regional (EU) values were grouped into thematic groups (topics) and the average percentages
-    #                         within each groups are the ones shown above.
-    #                     </li>
-    #                 </ol>
-    #             </p>
-    #             <p class='jtext'>
-    #                 Additionally, the indicators were re-aligned so higher values have a positive impact in the 
-    #                 Rule of Law, while lower values reflect negative impacts on the Rule of Law. You can take a 
-    #                 look at the full list of results in the table below:
-    #             </p>
-    #             """, 
-    #             unsafe_allow_html=True
-    #         )
-    #     st.markdown(
-    #         f"""
-    #         <p class='jtext'>
-    #             You can take a look at the full list of results in the table below:
-    #         </p>
-    #         """, 
-    #         unsafe_allow_html=True
-    #     )
-    #     with st.expander("Click here to see table of results"):
-    #         st.dataframe(subsection_summary.to_records(index=False))
-    #     st.markdown(
-    #         f"""
-    #         <h4>What about specific indicators?</h4>
-    #         <p class='jtext'>
-    #             Regardless of their associated topic, there is a handful of indicators in which the region, 
-    #             on average, is showing a top performance:
-    #         </p>
-    #         <h4 style='text-align: left;'>Top 15 Indicators in the Region</h4>
-    #         """, 
-    #         unsafe_allow_html=True
-    #     )
-    #     top_15 = viz.genBars(
-    #         data  = eu_data.head(15).sort_values(by = "value_realign", ascending = True), 
-    #         cpal  = color_palette,
-    #         level = "EU"
-    #     )
-    #     st.plotly_chart(top_15, config = {"displayModeBar": False})
-    #     st.markdown("---")
-    #     st.markdown(
-    #         f"""
-    #         <h6 style='text-align: left;'><i>Important Notes:</i></h6>
-    #         <p class='footnote'>
-    #             <i>
-    #                 Values were re-aligned so higher values have a positive impact in the Rule of Law,
-    #                 while lower values have a negative impact on the Rule of Law. Indicators corresponding 
-    #                 to the European Union were calculated as simple averages of the country indicators. 
-    #                 Country indicators were estimated as weighted averages of the subnational regions.
-    #                 For more information on what do the percentages represent for each indicator, please 
-    #                 consult the report outline or the <b>Indicator Level</b> tab in this dashboard.
-    #             </i>
-    #         </p>
-    #         """, 
-    #         unsafe_allow_html=True
-    #     )
-    #     st.markdown("---")
-    #     st.markdown(
-    #         f"""
-    #         <p class='jtext'>
-    #             Similarly, there is a set of indicators in which the region shows very low averages, most of 
-    #             them related to the topics highlighted above:
-    #         </p>
-    #         <h4 style='text-align: left;'>Bottom 15 Indicators in the Region</h4>
-    #         """, 
-    #         unsafe_allow_html=True
-    #     )
-    #     bot_15 = viz.genBars(
-    #         data  = eu_data.tail(15).sort_values(by = "value_realign", ascending = True),  
-    #         cpal  = color_palette,
-    #         level = "EU"
-    #     )
-    #     st.plotly_chart(bot_15, config = {"displayModeBar": False})
-    #     st.markdown("---")
-    #     st.markdown(
-    #         f"""
-    #         <h6 style='text-align: left;'><i>Important Notes:</i></h6>
-    #         <p class='footnote'>
-    #             <i>
-    #                 Values were re-aligned so higher values have a positive impact in the Rule of Law,
-    #                 while lower values have a negative impact on the Rule of Law. Indicators corresponding 
-    #                 to the European Union were calculated as simple averages of the country indicators. 
-    #                 Country indicators were estimated as weighted averages of the subnational regions.
-    #                 For more information on what do the percentages represent for each indicator, please 
-    #                 consult the report outline or the <b>Indicator Level</b> tab in this dashboard.
-    #             </i>
-    #         </p>
-    #         """, 
-    #         unsafe_allow_html=True
-    #     )
-    #     st.markdown("---")
-    #     st.markdown(
-    #         f"""
-    #         <p class='jtext'>
-    #             You can take a look at the complete list of topics and their respective average percentages
-    #             in the table below:
-    #         </p>
-    #         """, 
-    #         unsafe_allow_html=True
-    #     )
-    #     st.dataframe(
-    #         eu_data[["country","nuts_id", "chapter", "section", "title", "value2plot", "direction", "value_realign", "reportValue"]]
-    #         .sort_values("value_realign")
-    #         .to_records(index=False)
-    #     )
-    #     st.markdown(
-    #         f"""
-    #         <h4>Do specific results deviate a lot from these averages?</h4>
-    #         <p class='jtext'>
-    #             Yes, they do. To be more specific, looking at the average performance of the region is not recommended because 
-    #             indicators present some important variation across countries and, more importantly, even across
-    #             indicators associated to the same topics (sub-section).
-    #         </p>
-    #         <p class='jtext'>
-    #             Below, I'm presenting the comparison between Denmark and Hungary across all topics covered in
-    #             our Report. There is a clear difference between the performance of both countries in topics such as Freedom of 
-    #             Expression and Judicial Independence. However, if we take a look at the indicators within the 
-    #             Perceptions on the Accesibility of Civil Justice, Denmark alone has some quite variation. From only a 27% of
-    #             the sample agreeing that there is access to affordable DRM to more than 60% agreeing that the Danish Civil Justice
-    #             provides an equal and fair treatment.
-    #         </p>
-    #         <p class='jtext'>
-    #             Feel free to play with the data below. Don't forget that individual indicators have been re-aligned to higher
-    #             values are positive outcomes for the Rule of Law in a country, while lower values are associated to negative
-    #             perceptions of the Rule of Law.
-    #         </p>
-    #         """, 
-    #         unsafe_allow_html=True
-    #     )
-    #     country_select = st.multiselect(
-    #         "Please select a country(-ies) from the list below:",
-    #         (
-    #             data_points
-    #             .loc[data_points["level"] == "national"]
-    #             .drop_duplicates(subset = "country")
-    #             .country.to_list()            ),
-    #         default = ["Denmark", "Hungary"]
-    #     )
-    #     topic_focused = st.multiselect(
-    #         "(Optional) Let's narrow the data to the following topics:",
-    #         (
-    #             country_data
-    #             .loc[country_data["level"] == "national"]
-    #             .drop_duplicates(subset = "section")
-    #             .section.to_list()
-    #         )
-    #     )
-    #     if len(topic_focused) > 0:
-    #         country_data = (
-    #             country_data.loc[country_data["section"].isin(topic_focused)]
-    #         ) 
-    #     bees = viz.genBees(country_data = country_data, country_select = country_select)
-    #     st.plotly_chart(bees, config = {"displayModeBar": False})
 
     with countrytab:
 
@@ -433,42 +192,36 @@ if passcheck.check_password():
             index = 1
             )
 
-
         country = st.selectbox(
-                "Please select a country from the list below:",
-                (data_points
-                .drop_duplicates(subset = "country")
-                .country.to_list())
-            )
+            "Please select a country from the list below:",
+            (data_points
+            .drop_duplicates(subset = "country")
+            .country.to_list())
+        )
         
         theme = st.selectbox(
-        "Please select a report from the list below: ",
-        (data_points.drop_duplicates(subset = "report").report.to_list()), 
-        index = 0,
-        key = 'country_profile_theme_gpp'
+            "Please select a report from the list below: ",
+            (data_points.drop_duplicates(subset = "report").report.to_list()), 
+            index = 0,
+            key = 'country_profile_theme_gpp'
         )
         
         chapter = st.selectbox(
-        "Please select a chapter from the list below: ",
-        (data_points.loc[data_points["report"] == theme]
-         .drop_duplicates(subset = "chapter").chapter.to_list()), 
-         index = 0,
-         key = 'country_profile_chapter_gpp'
+            "Please select a chapter from the list below: ",
+            (data_points.loc[data_points["report"] == theme]
+            .drop_duplicates(subset = "chapter").chapter.to_list()), 
+            index = 0,
+            key = 'country_profile_chapter_gpp'
         )
         
         if rankings_or_score == "Averages":
-            # prepare data
             eu_and_country = pd.concat([eu_data, country_data])
-
-            # subset by countries (chosen country and european union)
-            # also subset by the chosen chapter and country. will display all sections, and gpp indicators associated with each
             subset_df = eu_and_country.loc[((eu_and_country['country'] == country) | (eu_and_country['country'] == 'European Union'))
                                           & (eu_and_country['chapter'] == chapter) & (eu_and_country['report'] == theme)]
 
-            #legend
             legend_entries = [
-            {"color": "red", "label": country},
-            {"color": "blue", "label": "European Union"}
+                {"color": "red", "label": country},
+                {"color": "blue", "label": "European Union"}
             ]
 
             legend_html = "<div style='text-align: center;'>"
@@ -492,16 +245,13 @@ if passcheck.check_password():
             eu_col = 'European Union'
             country_col = [col for col in pivot_df.columns if col not in ['title', 'subtitle', eu_col]][0]
 
-        # Renaming columns appropriately
+            # Renaming columns appropriately
             pivot_df.columns = ['section','title', 'subtitle', 'eu_value', 'country_value']
 
-        # Calculate the difference
+            # Calculate the difference
             pivot_df['difference'] = pivot_df['country_value'] - pivot_df['eu_value']
             pivot_df['country'] = country
             pivot_df = pivot_df.drop_duplicates(subset=['country', 'title'])
-
-            print(pivot_df)
-
             
             # get unique subsections
             subsections = subset_df["section"].unique()
@@ -533,66 +283,60 @@ if passcheck.check_password():
                 # being extra careful with filtering for report, chapter, section
                 subsection_data = filtered_data[(filtered_data['report'] == theme)&(filtered_data['chapter'] == chapter)
                                                 &(filtered_data['section'] == subsection)]
-
                 direction = subsection_data['direction'].iloc[0]
-
 
                 # rank in ascending order if direction is negative else rank in descending order
                 # ascending = True if direction != "positive" else False
-            
-                
                 if direction == 'negative':
                     ascending = False 
                 else:
                     ascending = True
 
                 # calculate ranking
-                subsection_data['ranking'] = subsection_data.groupby(['section', 'title'])['value_realigned'].rank(
-                    method = 'first', ascending = ascending).astype(int)
-                
-
+                subsection_data['ranking'] = (
+                    subsection_data
+                    .groupby(['section', 'title'])['value_realigned']
+                    .rank(method = 'first', ascending = ascending)
+                    .astype(int)
+                )
+        
                 rankings_viz = viz.genRankingsViz(subsection_data, subsection, country)
                 st.plotly_chart(rankings_viz)
-
-
             
     with vartab:
 
-        # Filters
         theme = st.selectbox(
-        "Please select a report from the list below: ",
-        (data_points.drop_duplicates(subset = "report").report.to_list()), 
-        index = 0,
-        key = 'indicator_level_theme_gpp'
+            "Please select a report from the list below: ",
+            (data_points.drop_duplicates(subset = "report").report.to_list()), 
+            index = 0,
+            key = 'indicator_level_theme_gpp'
         )
 
-        # chapter
         chapter = st.selectbox(
-        "Please select a chapter from the list below: ",
-        (data_points.loc[data_points["report"] == theme]
-         .drop_duplicates(subset = "chapter").chapter.to_list()), 
-         index = 0,
-         key = 'indicator_level_chapter_gpp'
+            "Please select a chapter from the list below: ",
+            (data_points.loc[data_points["report"] == theme]
+            .drop_duplicates(subset = "chapter").chapter.to_list()), 
+            index = 0,
+            key = 'indicator_level_chapter_gpp'
         )
 
         # get the pillar
         section = st.selectbox(
-        "Please select a section from the list below:",
-        (data_points.loc[data_points["chapter"] == chapter]
-         .drop_duplicates(subset = "section")
-         .section.to_list()),
-         key = 'section_gpp'
+            "Please select a section from the list below:",
+            (data_points.loc[data_points["chapter"] == chapter]
+            .drop_duplicates(subset = "section")
+            .section.to_list()),
+            key = 'section_gpp'
         )
 
         # get the chart
         chart = st.selectbox(
             "Please select an indicator from the list below: ",
-            (data_points.loc[data_points["section"] == section]
+            sorted((data_points.loc[data_points["section"] == section]
              .drop_duplicates(subset = "title")
-             .title.to_list()),
+             .title.to_list())),
              key = 'chart_vartab'
         )
-
 
         country_focused = st.toggle(
             "Would you like to focus on a single country? ",
@@ -613,20 +357,7 @@ if passcheck.check_password():
         if dem_differences:
                 chosen_dem = st.selectbox("Please select a demographic dimension: ", ['Income', 'Gender'], key = 'chosen_dem')
                 data_points_disag = data_points_disag[data_points_disag['demographic']!= 'Total Sample']
-                # demographic_data  = (
-                #     data_points_disag.copy()
-                #     .loc[ (data_points_disag['report'] == theme) & 
-                #          (data_points_disag['chapter'] == chapter) & 
-                #          #(data_points_disag['level'] == 'regional') &
-                #         (data_points_disag['section'] == section) & 
-                #         (data_points_disag['title'] == chart) ]
-                # )
-                
-        
-                
 
-
-        # filter by report, chapter, section
 
         # Subsetting and preparing data
         chart_n = (data_points.copy()
@@ -834,9 +565,6 @@ if passcheck.check_password():
                 bars = viz.genBars(data = data4bars, cpal = color_palette, level = "indicator")
                 st.plotly_chart(bars, use_container_width = True)
 
-                    
-
-
         with table_tab:
                 
             st.markdown(
@@ -964,10 +692,15 @@ if passcheck.check_password():
             )
 
             # Subsetting and preparing 
-            chart_n_lab = (data_points
-                   .loc[((data_points['report'] == theme_lab) &
-                (data_points['chapter'] == chapter_lab) &
-                (data_points['section'] == section_lab) & (data_points["title"] == chart_lab)), 'title'].iloc[0])
+            chart_n_lab = (
+                data_points
+                .loc[(
+                    (data_points['report'] == theme_lab) &
+                    (data_points['chapter'] == chapter_lab) &
+                    (data_points['section'] == section_lab) & 
+                    (data_points["title"] == chart_lab)
+                ), 'title'].iloc[0]
+            )
             
             n4lab = [chart_n, chart_n_lab]
             data4lab = (
@@ -984,8 +717,6 @@ if passcheck.check_password():
                     values  = "value2plot"
                 ).reset_index()
             
-            print(data4lab)
-
             # Defining Annotations
             title_lab    = data_points.loc[data_points["title"] == chart_n_lab].title.str.replace(r"Graph \d+\. ", "", regex=True).iloc[0]
             subtitle_lab = data_points.loc[data_points["title"] == chart_n_lab].subtitle.iloc[0]
@@ -1044,164 +775,3 @@ if passcheck.check_password():
                     """, 
                     unsafe_allow_html=True
                 )
-
-    # with czechia_tab:
-    #     st.markdown(
-    #         f"""
-    #         <h3 style='text-align: left;'>
-    #             Does the regional grouping in Czechia affect the main findings?
-    #         </h3>
-    #         <p class='jtext'>
-    #             This tab is specially dedicated to answer that question. Here you can compare the data points for 
-    #             different grouping options and see how much do the resulting data points change. Take into account that
-    #             the resulng regions are not comparable across grouping options. Therefore, you need to focus on how much
-    #             do the distribution of data points change between options. 
-    #         </p>
-    #         <p class='jtext'>
-    #             You can also visualize the deviations from the national average. Given that the national average is fixed,
-    #             no matter which grouping option are you working, the deviations will give a different approach to answer
-    #             the question by using a fixed benchmark.
-    #         </p>
-    #         <h5 style='text-align: left;'>
-    #             Summary
-    #         </h5>
-    #         <ul>
-    #             <li>
-    #                 <p class='jtext'>
-    #                 Option 2 is slightly more efficient in reducing heterogeneity across regions. In other words, it reduces 
-    #                 the regional differences across topics. Option 1 is also a good alternative if we do not want to inflate 
-    #                 the regional differences. The "reduced" differences across regions seems to be common in the options where 
-    #                 all regions have at least 500 observations.
-    #             </p>
-    #             </li>
-    #             <li>
-    #                 <p class='jtext'>
-    #                     Option 5 is the option that produces the highest differences across regions. However, as mentioned above, 
-    #                     these differences would not affect the overall findings across thematic topics. Leaving Prague as a sole 
-    #                     region shows higher values for trust of authority figures, perception of corruption in institutions, and 
-    #                     other variables. This "amplified" differences could be due to higher SES and Urban levels, but also because 
-    #                     of the reduced sample for Prague (only 250 people).
-    #                 </p>
-    #             </li>
-    #             <li>
-    #                 <p class='jtext'>
-    #                     Option 3 and 4 show very marginal differences in the results.
-    #                 </p>
-    #             </li>
-    #         </ul>
-    #         <p class='jtext'>
-    #             Finally, we would like to warn about the potential sampling issues for choosing a grouping option in which a region is left alone. In this specific scenario, we would be dealing with a total sample size of 250 respondents for that region, which is even lower than the total samples that we have for some Caribbean countries. This would be a total sample of only 125 respondents for questions in which the questionnaire is split into two sub-groups: Civic Participation and Institutional Performance modules.
-    #         </p>
-    #         <p class='jtext'>
-    #             <b>At this point, our preference would be using Option 1 for grouping sub-national regions.</b>
-    #         </p>
-    #         """, 
-    #         unsafe_allow_html=True
-    #     )
-
-    #     with st.expander("Click here to see the detail of current options"):
-    #         st.markdown(
-    #             f"""
-    #             <p class='jtext'>
-    #                 Available options:
-    #             </p>
-    #             <ul>
-    #                 <li>
-    #                     <b>T1</b>: Based on geography/population:
-    #                     <ul>
-    #                         <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
-    #                         <li>CZ03 (Southwest) + CZ04 (Northwest)</li>
-    #                         <li>CZ05 (Northeast) + CZ06 (Southeast)</li>
-    #                         <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
-    #                     </ul>
-    #                 </li>
-    #                 <br>
-    #                 <li>
-    #                     <b>T2</b>: Based on geography/population:
-    #                     <ul>
-    #                         <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
-    #                         <li>CZ03 (Southwest) + CZ06 (Southeast)</li>
-    #                         <li>CZ04 (Northwest) + CZ05 (Northeast)</li>
-    #                         <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
-    #                     </ul>
-    #                 </li>
-    #                 <br>
-    #                 <li>
-    #                     <b>T3</b>: Based on cultural divisions:
-    #                     <ul>
-    #                         <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
-    #                         <li>CZ03 (Southwest) + CZ04 (Northwest) + CZ05 (Northeast)</li>
-    #                         <li>CZ06 (Southeast) + CZ07 (Central Moravia)</li>
-    #                         <li>CZ08 (Moravian-Silesian)</li>
-    #                     </ul>
-    #                 </li>
-    #                 <br>
-    #                 <li>
-    #                     <b>T4</b>: Based on cultural divisions:
-    #                     <ul>
-    #                         <li>CZ01 (Prague) + CZ02 (Central Bohemia)</li>
-    #                         <li>CZ03 (Southwest) + CZ04 (Northwest) + CZ05 (Northeast)</li>
-    #                         <li>CZ06 (Southeast)</li>
-    #                         <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
-    #                     </ul>
-    #                 </li>
-    #                 <br>
-    #                 <li>
-    #                     <b>T5</b>: Based on both geographic and cultural features:
-    #                     <ul>
-    #                         <li>CZ01 (Prague)</li>
-    #                         <li>CZ02 (Central Bohemia) + CZ03 (Southwest) + CZ04 (Northwest)</li>
-    #                         <li>CZ05 (Northeast) + CZ06 (Southeast)</li>
-    #                         <li>CZ07 (Central Moravia) + CZ08 (Moravian-Silesian)</li>
-    #                     </ul>
-    #                 </li>
-    #             </ul>
-    #             <br>
-    #             """, 
-    #             unsafe_allow_html=True
-    #         )
-
-    #     topics = [
-    #         "Trust", "Corruption Perceptions", "Justice System Evaluation", "Law Enforcement Performance",
-    #         "Criminal Justice Performance", "Perceptions on Authoritarian Behavior", "Civic Participation A", 
-    #         "Civic Participation B", "Corruption Perceptions"
-    #     ]
-
-    #     groupings = st.multiselect(
-    #         "Which grouping options do you want to visualize and compare",
-    #         ["T1", "T2", "T3", "T4", "T5"],
-    #         default = ["T1", "T5"],
-    #         max_selections = 2
-    #     )
-    #     stat = st.selectbox(
-    #         "What statistic would you like to visualize?",
-    #         ["Data Points", "Deviations from National Average"],
-    #         index = 0
-    #     )
-
-    #     czechia_data = pd.merge(
-    #         pd.read_csv("inputs/cpoints.csv"),
-    #         outline[["n", "topic", "reportValues", "title", "subtitle", "direction"]],
-    #         how      = "left",
-    #         left_on  = "chart",
-    #         right_on = "n"
-    #     )
-    #     czechia_data = czechia_data[czechia_data["topic"].isin(topics)]
-    #     czechia_data["title"] = czechia_data["title"].str.replace(r"^Graph \d+\. ", "", regex=True)
-    #     czechia_data["grouping"] = czechia_data["region"].str[:2]
-
-    #     for topic in topics:
-    #         with st.empty():
-    #             st.markdown(
-    #                 f"""
-    #                 <h3 style='text-align: left;'>{topic}</h3>
-    #                 """, 
-    #                 unsafe_allow_html=True
-    #             )
-    #             dotties = viz.genDotties(
-    #                 data = czechia_data, 
-    #                 topic = topic, 
-    #                 groupings = groupings, 
-    #                 stat = stat
-    #             )
-    #             st.plotly_chart(dotties, use_container_width = True)
