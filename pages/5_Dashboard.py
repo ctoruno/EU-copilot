@@ -627,26 +627,40 @@ if passcheck.check_password():
 
 
         # filter by report, chapter, section
-        data_points = data_points.loc[(data_points['report'] == theme) & (data_points['chapter'] == chapter) & (data_points['section'] == section)]
 
         # Subsetting and preparing data
-        chart_n = data_points.loc[data_points["title"] == chart, 'title'].iloc[0]
+        chart_n = (data_points.copy()
+                   .loc[((data_points['report'] == theme) &
+                (data_points['chapter'] == chapter) &
+                (data_points['section'] == section) & (data_points["title"] == chart)), 'title'].iloc[0])
 
         data4map = (
             data_points.copy()
-            .loc[(data_points["title"] == chart_n) & (data_points["level"] == "regional")]
+            .loc[
+                (data_points['report'] == theme) &
+                (data_points['chapter'] == chapter) &
+                (data_points['section'] == section) & 
+                (data_points["title"] == chart_n) & (data_points["level"] == "regional")]
         )
 
 
         country_avgs = (
             data_points.copy()
-            .loc[(data_points["title"] == chart_n) & (data_points["level"] == "national")]
+            .loc[
+                (data_points['report'] == theme) &
+                (data_points['chapter'] == chapter) &
+                (data_points['section'] == section) & (data_points["title"] == chart_n) & 
+                (data_points["level"] == "national")]
             .reset_index()
         )
 
         eu_avg = (
             data_points.copy()
-            .loc[(data_points["title"] == chart_n) & (data_points["level"] == "eu")]
+            .loc[
+                (data_points['report'] == theme) &
+                (data_points['chapter'] == chapter) &
+                (data_points['section'] == section) & (data_points["title"] == chart_n) & 
+                (data_points["level"] == "eu")]
             .reset_index()
         )
 
@@ -914,9 +928,18 @@ if passcheck.check_password():
                 )
 
             # Filters
+            theme_lab = st.selectbox(
+                "Please select a report from the list below: ",
+                (data_points.drop_duplicates(subset = "report").report.to_list()), 
+                index = 0,
+                key = 'theme_lab'
+                )
+            
+
             chapter_lab = st.selectbox(
                 "Please select a thematic chapter from the list below",
                 (data_points
+                .loc[data_points["report"] == theme_lab]
                 .drop_duplicates(subset = "chapter")
                 .chapter.to_list()),
                 key = "chapter_lab"
@@ -930,7 +953,6 @@ if passcheck.check_password():
                 key = "section_lab"
             )
             
-            
             chart_lab = st.selectbox(
                 "Please select a graph from the list below",
                 (data_points
@@ -942,12 +964,17 @@ if passcheck.check_password():
             )
 
             # Subsetting and preparing 
-            chart_n_lab = data_points.loc[data_points["title"] == chart_lab, "title"].iloc[0]
+            chart_n_lab = (data_points
+                   .loc[((data_points['report'] == theme_lab) &
+                (data_points['chapter'] == chapter_lab) &
+                (data_points['section'] == section_lab) & (data_points["title"] == chart_lab)), 'title'].iloc[0])
+            
             n4lab = [chart_n, chart_n_lab]
             data4lab = (
                 data_points.copy()
                 .loc[(data_points["title"].isin(n4lab)) & (data_points["level"] == "regional")]
             )
+
             data4lab["title"] = data4lab["title"].map({chart_n: "xaxis", chart_n_lab: "yaxis"})
             data4lab = data4lab.drop_duplicates(subset=["country", "nuts_id", "nuts_ltn", "title"])
 
