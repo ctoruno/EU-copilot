@@ -424,7 +424,7 @@ if passcheck.check_password():
         direction    = data_points.loc[data_points["title"] == chart_n].direction.iloc[0]
         color_codes  = ["#E03849", "#FF7900", "#FFC818", "#46B5FF", "#0C75B6", "#18538E"]
         value_breaks = [0.00, 0.20, 0.40, 0.60, 0.80, 1.00]
-        if direction == "Negative":
+        if direction == "negative":
             ordered_colors = color_codes[::-1]
         else:
             ordered_colors = color_codes
