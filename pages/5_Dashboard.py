@@ -513,6 +513,9 @@ if passcheck.check_password():
                 on the top-right corner of the map and click on the <b>RESET VIEW</b>
                 button. I haven't figured out what's wrong.
                 </p>
+                <p class='footnote'>
+                If a region is not shown on the map, it is because there were not enough observations to form a representative sample.
+                </p>
                 """, 
                 unsafe_allow_html=True
             )
