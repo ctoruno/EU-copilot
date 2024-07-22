@@ -74,8 +74,11 @@ if passcheck.check_password():
     # load mlayer for map
     @st.cache_data
     def load_mlayer():
-        df = gpd.read_file("https://raw.githubusercontent.com/ctoruno/ROLI-Map-App/main/Data/EU_base_map.geojson").to_crs(epsg=4326)
+        df = gpd.read_file("inputs/EU_base_map.geojson").to_crs(epsg=4326)
         return df
+    # def load_mlayer():
+    #     df = gpd.read_file("https://raw.githubusercontent.com/ctoruno/ROLI-Map-App/main/Data/EU_base_map.geojson").to_crs(epsg=4326)
+    #     return df
  
     
     def realign_data(value, direction):
