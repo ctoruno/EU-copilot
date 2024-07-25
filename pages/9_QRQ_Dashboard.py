@@ -178,7 +178,7 @@ if passcheck.check_password():
         (data_points.loc[data_points["chapter"] == chapter]
          .drop_duplicates(subset = "section")
          .section.to_list()),
-         index = 1,
+         index = 0,
          key = 'indicator_level_section'
         )
 
