@@ -40,6 +40,7 @@ if passcheck.check_password():
     dbkey    = st.secrets["app_key"]
     dbsecret = st.secrets["app_secret"]
 
+
     atoken = passcheck.retrieve_DBtoken(dbkey, dbsecret, dbtoken)
 
         # Accessing Dropbox
@@ -95,7 +96,7 @@ if passcheck.check_password():
     )
     region_labels = load_rlabels()
     # omit A2J for now
-    outline = outline.loc[outline['chapter'] != 'Access to Justice']
+    # outline = outline.loc[outline['chapter'] != 'Access to Justice']
     eu_nuts       = load_mlayer()
     data_points.rename(columns = {
         'theme': 'report',
@@ -156,26 +157,26 @@ if passcheck.check_password():
     with qrq_vartab:
 
     # get the report in the outline
-        theme = st.selectbox(
+        theme_indicator = st.selectbox(
         "Please select a report from the list below: ",
-        (data_points.drop_duplicates(subset = "report").report.to_list()), 
+        (data_points.copy().drop_duplicates(subset = "report").report.to_list()), 
         index = 0,
         key = 'indicator_level_theme'
         )
 
         # chapter
-        chapter = st.selectbox(
+        chapter_indicator = st.selectbox(
         "Please select a chapter from the list below: ",
-        (data_points.loc[data_points["report"] == theme]
+        (data_points.copy().loc[data_points["report"] == theme_indicator]
          .drop_duplicates(subset = "chapter").chapter.to_list()), 
          index = 0,
          key = 'indicator_level_chapter'
         )
 
         # get the pillar
-        section = st.selectbox(
+        section_indicator = st.selectbox(
         "Please select an indicator from the list below:",
-        (data_points.loc[data_points["chapter"] == chapter]
+        (data_points.copy().loc[data_points["chapter"] == chapter_indicator]
          .drop_duplicates(subset = "section")
          .section.to_list()),
          index = 0,
@@ -190,7 +191,7 @@ if passcheck.check_password():
         if country_focused == True:
             country_select = st.multiselect(
             "(Optional) Select a country: ",
-            (data_points
+            (data_points.copy()
              .drop_duplicates(subset = 'country')
              .country.to_list())
             )
@@ -198,27 +199,33 @@ if passcheck.check_password():
 
 
     # get the chart number
-        data_points = data_points.loc[(data_points['report'] == theme) & (data_points['chapter'] == chapter)]
-        chart_n = data_points.loc[data_points['title'] == section, 'title'].iloc[0]
-    
+        # data_points = data_points.copy().loc[(data_points['report'] == theme_indicator) & (data_points['chapter'] == chapter_indicator)]
+        # chart_n = data_points.copy().loc[data_points['title'] == section_indicator, 'title'].iloc[0]
+        filtered_data_points_indicator = data_points.loc[
+        (data_points['report'] == theme_indicator) & 
+        (data_points['chapter'] == chapter_indicator)
+    ]
+        chart_n = filtered_data_points_indicator.loc[
+        filtered_data_points_indicator['title'] == section_indicator, 'title'
+    ].iloc[0]
 
         mapData = (
-            data_points.copy()
-            .loc[(data_points["title"] == chart_n) & (data_points["level"] == "regional")]
+            filtered_data_points_indicator.copy()
+            .loc[(filtered_data_points_indicator["title"] == chart_n) & (filtered_data_points_indicator["level"] == "regional")]
         )
 
 
 
         country_avgs = (
-            data_points.copy()
-            .loc[(data_points["title"] == chart_n) & (data_points["level"] == "national")]
+            filtered_data_points_indicator.copy()
+            .loc[(filtered_data_points_indicator["title"] == chart_n) & (filtered_data_points_indicator["level"] == "national")]
             .reset_index()
         )
 
 
         eu_avg = (
-            data_points.copy()
-            .loc[(data_points["title"] == chart_n) & (data_points['level'] == "eu")]
+            filtered_data_points_indicator.copy()
+            .loc[(filtered_data_points_indicator["title"] == chart_n) & (filtered_data_points_indicator['level'] == "eu")]
             .reset_index()
         )
 
@@ -242,15 +249,15 @@ if passcheck.check_password():
         )
 
         # Defining Annotations
-        title    = data_points.loc[data_points["title"] == chart_n].title.iloc[0]
-        subtitle = data_points.loc[data_points["title"] == chart_n].subtitle.iloc[0]
-        reportV  = data_points.loc[data_points["title"] == chart_n].reportValue.iloc[0]
+        title    = data_points.copy().loc[data_points["title"] == chart_n].title.iloc[0]
+        subtitle = data_points.copy().loc[data_points["title"] == chart_n].subtitle.iloc[0]
+        reportV  = data_points.copy().loc[data_points["title"] == chart_n].reportValue.iloc[0]
 
         # defining tabs for indicator level
         map_tab, bars_tab, table_tab, compare_tab = st.tabs(["Sub-national Summary","National Synopsis","Detail", "GPP Contextualization"])
 
 
-        direction   =   data_points.loc[data_points["title"] == chart_n].direction.iloc[0]
+        direction   =   data_points.copy().loc[data_points["title"] == chart_n].direction.iloc[0]
         color_codes  = ["#E03849", "#FF7900", "#FFC818", "#46B5FF", "#0C75B6", "#18538E"]
         value_breaks = [0.00, 0.20, 0.40, 0.60, 0.80, 1.00]
         if direction == "Negative":
@@ -359,11 +366,11 @@ if passcheck.check_password():
             data_points_gpp['description'] = 'gpp'
             data_points['description'] = 'qrq'
 
-            full = pd.concat([data_points, data_points_gpp])
+            full = pd.concat([filtered_data_points_indicator.copy(), data_points_gpp])
             # filter for regional data
             regional = full.loc[full['level'] == 'regional']
             # filter for section
-            compare_subset = regional.loc[regional['section'] == section]
+            compare_subset = regional.loc[regional['section'] == section_indicator]
 
             if len(compare_subset['title'].unique()) > 1:       
             # Creating dropdown options
@@ -372,7 +379,7 @@ if passcheck.check_password():
 
                 filtered_subset = compare_subset.drop_duplicates(subset='title')
                 for _, row in filtered_subset.iterrows():
-                     if pd.notna(row['value2plot']) & (row['title']!= section):
+                     if pd.notna(row['value2plot']) & (row['title']!= section_indicator):
                          options.append(row['title'])
                          title_mapping[row['title']] = (row['title'], 'value2plot')
                 #     if pd.notna(row['value2plot_id1']):
@@ -424,7 +431,7 @@ if passcheck.check_password():
                         unsafe_allow_html=True
                     )
 
-                compare_scatter = viz.gen_compare_scatter(compare_subset, section, gpp_indicator)
+                compare_scatter = viz.gen_compare_scatter(compare_subset, section_indicator, gpp_indicator)
                 st.plotly_chart(compare_scatter)
                 st.markdown(
                 f"""
@@ -453,7 +460,7 @@ if passcheck.check_password():
         country = st.selectbox(
             "Please select a country from the list below: ",
             (
-                data_points.drop_duplicates(subset = "country")
+                data_points.copy().drop_duplicates(subset = "country")
                 .country.to_list()), key = 'country_profile_country'
             )
 
@@ -467,7 +474,9 @@ if passcheck.check_password():
         
         chapter = st.selectbox(
         "Please select a chapter from the list below: ",
-        (data_points.loc[(data_points["report"] == theme) & (data_points['chapter'] != 'Chapter III. Safety')]
+        (data_points.copy().loc[(data_points["report"] == theme) 
+                         # & (data_points['chapter'] != 'Chapter III. Safety')
+                         ]
         .drop_duplicates(subset = "chapter").chapter.to_list()),
         key = 'country_profile_chapter'
         )
@@ -483,7 +492,7 @@ if passcheck.check_password():
                 idea of the deviations between regional scores.""", 
                 unsafe_allow_html=True)
             
-                country_qrq_df = data_points.loc[(data_points['level'] == 'national') | (data_points['level'] == 'regional')]
+                country_qrq_df = data_points.copy().loc[(data_points['level'] == 'national') | (data_points['level'] == 'regional')]
 
             # subset by country
                 scatter = viz.QRQ_country_scatter(df = country_qrq_df, country = country, chapter = chapter)
@@ -492,28 +501,39 @@ if passcheck.check_password():
 
         with eu_dist:
                 # generate rankings based on qrq scores
-                national = data_points.loc[data_points['level'] == "national"]
+                national = data_points.copy().loc[data_points['level'] == "national"]
 
 
-                filtered_data = national.loc[(national['report'] == theme) & (
+                filtered_data = national.copy().loc[(national['report'] == theme) & (
                     national['chapter'] == chapter)]
 
                 subpillars = filtered_data['title'].unique()
 
                 # generate rankings in filtered dataframe
+                # for subpillar in subpillars:
+                #     if filtered_data.copy().loc[(filtered_data['report'] == theme) & (filtered_data['chapter'] == chapter )& (filtered_data['title'] == subpillar), 'direction'].iloc[0] == 'positive':
+                #         filtered_data.loc[filtered_data['title'] == subpillar, 'ranking'] = filtered_data.loc[
+                #             filtered_data[(filtered_data['report'] == theme) & (filtered_data['chapter'] == chapter )&  (filtered_data['title'] == subpillar)].groupby(
+                #                 ['chapter', 'section','title'])['value2plot'].rank(method = 'first', ascending = False, na_option='bottom').astype(int)    
+                #     else:
+                #         filtered_data.loc[(filtered_data['report'] == theme) & (filtered_data['chapter'] == chapter )&  (filtered_data['title'] == subpillar), 'ranking'] = filtered_data.loc[
+                #             filtered_data[(filtered_data['report'] == theme) & (filtered_data['chapter'] == chapter )&  (filtered_data['title'] == subpillar)].groupby(
+                #                 ['chapter', 'section','title'])['value2plot'].rank(method = 'first', ascending = True, na_option='bottom').astype(int)  
+
                 for subpillar in subpillars:
-                    if filtered_data.loc[filtered_data['title'] == subpillar, 'direction'].iloc[0] == 'positive':
-                        filtered_data.loc[filtered_data['title'] == subpillar, 'ranking'] = filtered_data.loc[
-                            filtered_data['title'] == subpillar].groupby(
-                                ['chapter', 'section','title'])['value2plot'].rank(method = 'first', ascending = False).astype(int)    
+                    filtered_data = filtered_data.drop_duplicates(subset = ['country', 'indicator'])
+                    condition = (filtered_data['report'] == theme) & (filtered_data['chapter'] == chapter) & (filtered_data['title'] == subpillar)
+                    if filtered_data.loc[condition, 'direction'].iloc[0] == 'positive':
+                        filtered_data.loc[condition, 'ranking'] = filtered_data.loc[condition].groupby(
+                            ['chapter', 'section', 'title'])['value2plot'].rank(method='first', ascending=False, na_option='bottom').astype(int)
                     else:
-                        filtered_data.loc[filtered_data['title'] == subpillar, 'ranking'] = filtered_data.loc[
-                            filtered_data['title'] == subpillar].groupby(
-                                ['chapter', 'section','chart'])['value2plot'].rank(method = 'first', ascending = True).astype(int)  
+                        filtered_data.loc[condition, 'ranking'] = filtered_data.loc[condition].groupby(
+                            ['chapter', 'section', 'title'])['value2plot'].rank(method='first', ascending=True, na_option='bottom').astype(int)
                     
-                rankings = viz.gen_qrq_rankins(filtered_data, country)
+                # filtered_data = filtered_data.drop_duplicates(subset = ['country', 'indicator'])
+                rankings = viz.gen_qrq_rankins(filtered_data, country, theme, chapter)
                 st.plotly_chart(rankings)
-    
+
     st.markdown("""
         <hr>
         <p><strong>Important</strong>: <em>QRQ data is still being validated, and as such we expect that 

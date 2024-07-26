@@ -448,7 +448,7 @@ def QRQ_country_scatter(df, country, chapter):
 
 
 def gen_compare_scatter(subset, section, gpp_indicator):
-    subset["subtitle"] = subset["subtitle"].apply(wrap_text)
+    # subset["subtitle"] = subset["subtitle"].apply(wrap_text)
     qrq_data = subset[subset['title'] == section]
     gpp_data = subset[subset['title'] == gpp_indicator]
 
@@ -550,12 +550,16 @@ def gen_compare_scatter(subset, section, gpp_indicator):
     return fig
 
 
-def gen_qrq_rankins(df, chosen_country):
+def gen_qrq_rankins(df, chosen_country, theme, chapter):
     color_scale = px.colors.qualitative.G10
-    df['section'] = df['section'].apply(wrap_text) 
-    df['subtitle'] = df['subtitle'].apply(wrap_text)
+    if not df['section'].isna().all():
+        df['section'] = df['section'].apply(lambda x: wrap_text(x) if pd.notna(x) else x)
+    
+    if not df['subtitle'].isna().all():
+        df['subtitle'] = df['subtitle'].apply(lambda x: wrap_text(x) if pd.notna(x) else x)
 
-    chapter = df['chapter'].iloc[1]
+    df = df.loc[(df['report'] == theme)]
+    df = df.loc[df['chapter'] == chapter]
 
     fig = px.scatter(
         df,
