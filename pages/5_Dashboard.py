@@ -500,6 +500,7 @@ if passcheck.check_password():
                    )
                 map = viz.genMap(data4map = data4map, eu_nuts  = eu_nuts, color_palette = color_palette)
                 st.plotly_chart(map, use_container_width = True)
+
             st.markdown("---")
             st.markdown(
                 f"""
@@ -520,8 +521,6 @@ if passcheck.check_password():
                 unsafe_allow_html=True
             )
             st.markdown("---")
-                    
-
 
         with bars_tab:
 
@@ -567,6 +566,14 @@ if passcheck.check_password():
                 data4bars = data4bars.drop_duplicates()
                 bars = viz.genBars(data = data4bars, cpal = color_palette, level = "indicator")
                 st.plotly_chart(bars, use_container_width = True)
+
+                dtatab = (
+                    data4bars
+                    .reset_index(drop = True)
+                    .loc[:,["country", "nuts_id", "value2plot"]]
+                )
+                dtatab.index += 1
+                st.dataframe(dtatab)
 
         with table_tab:
                 
@@ -777,4 +784,4 @@ if passcheck.check_password():
                     <h6 style='text-align: left;'><i>{subtitle_lab}</i></h6>
                     """, 
                     unsafe_allow_html=True
-                )
+                ) 
