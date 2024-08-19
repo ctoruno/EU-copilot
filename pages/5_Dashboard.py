@@ -246,7 +246,7 @@ if passcheck.check_password():
             country_col = [col for col in pivot_df.columns if col not in ['title', 'subtitle', eu_col]][0]
 
             # Renaming columns appropriately
-            pivot_df.columns = ['section','title', 'subtitle', 'eu_value', 'country_value']
+            pivot_df.columns = ['section','title', 'subtitle', 'country_value', 'eu_value']
 
             # Calculate the difference
             pivot_df['difference'] = pivot_df['country_value'] - pivot_df['eu_value']
