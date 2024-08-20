@@ -84,7 +84,7 @@ if passcheck.check_password():
             return value
         
     data_points   = load_DBfile("data4web_gpp.csv", format = 'csv')
-    data_points   = data_poins.loc[:, data_points.columns != 'direction']
+    data_points   = data_points.loc[:, data_points.columns != 'direction']
     region_labels = load_rlabels()
     outline       = load_DBfile("report_outline.xlsx", format = 'excel')
     eu_nuts       = load_mlayer()
