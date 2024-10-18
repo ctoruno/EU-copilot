@@ -68,7 +68,7 @@ if passcheck.check_password():
     
     @st.cache_data
     def load_rlabels():
-        df = pd.read_excel("https://github.com/WJP-DAU/eu-thematic-reports/raw/main/data-viz/inputs/region_labels.xlsx")
+        f = pd.read_excel("https://github.com/WJP-DAU/eu-gpp-report/raw/main/data-viz/inputs/region_labels.xlsx")
         return df
 
     
