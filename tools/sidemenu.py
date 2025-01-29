@@ -21,6 +21,7 @@ def insert_smenu():
             Section("Dashboard"),
             Page("pages/5_Dashboard.py", "GPP Data", in_section=True),
             Page("pages/9_QRQ_Dashboard.py", "QRQ Data", in_section=True),
+            Page("pages/10_A2J_Dashboard.py", "Access to Justice Journey", in_section=True),
             Page("pages/8_Information.py", "Information", in_section=False)
         ]
     )
