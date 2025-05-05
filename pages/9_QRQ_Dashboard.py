@@ -117,9 +117,11 @@ data_points_gpp.rename(columns = {
     'value': 'value2plot'
 }, inplace = True)
 
-#
-# get the direction from the outline
-data_points = pd.merge(data_points, outline[['title','subtitle', 'direction', 'reportValue']], on = 'title', how = 'left')
+data_points = pd.merge(
+    data_points, outline[['title','subtitle', 'direction', 'reportValue']], 
+    on = ['title', 'subtitle'], 
+    how = 'left'
+)
 
 data_points_gpp = pd.merge(data_points_gpp, outline[['title', 'direction', 'reportValue']], on = 'title', how = 'left' )
 data_points_gpp['value2plot'] = data_points_gpp['value2plot']*100
@@ -156,7 +158,6 @@ qrq_vartab, qrq_countrytab = st.tabs(["Indicator Level", "Country Profile"])
 
 with qrq_vartab:
 
-# get the report in the outline
     theme_indicator = st.selectbox(
     "Please select a report from the list below: ",
     (data_points.copy().drop_duplicates(subset = "report").report.to_list()), 
@@ -164,7 +165,6 @@ with qrq_vartab:
     key = 'indicator_level_theme'
     )
 
-    # chapter
     chapter_indicator = st.selectbox(
     "Please select a chapter from the list below: ",
     (data_points.copy().loc[data_points["report"] == theme_indicator]
@@ -173,7 +173,6 @@ with qrq_vartab:
         key = 'indicator_level_chapter'
     )
 
-    # get the pillar
     section_indicator = st.selectbox(
     "Please select an indicator from the list below:",
     (data_points.copy().loc[data_points["chapter"] == chapter_indicator]
@@ -188,7 +187,7 @@ with qrq_vartab:
     value = True
     )
 
-    if country_focused == True:
+    if country_focused:
         country_select = st.multiselect(
         "(Optional) Select a country: ",
         (data_points.copy()
@@ -196,25 +195,18 @@ with qrq_vartab:
             .country.to_list())
         )
 
-
-
-# get the chart number
-    # data_points = data_points.copy().loc[(data_points['report'] == theme_indicator) & (data_points['chapter'] == chapter_indicator)]
-    # chart_n = data_points.copy().loc[data_points['title'] == section_indicator, 'title'].iloc[0]
     filtered_data_points_indicator = data_points.loc[
-    (data_points['report'] == theme_indicator) & 
-    (data_points['chapter'] == chapter_indicator)
-]
+        (data_points['report'] == theme_indicator) & 
+        (data_points['chapter'] == chapter_indicator)
+    ]
     chart_n = filtered_data_points_indicator.loc[
-    filtered_data_points_indicator['title'] == section_indicator, 'title'
-].iloc[0]
+        filtered_data_points_indicator['title'] == section_indicator, 'title'
+    ].iloc[0]
 
     mapData = (
         filtered_data_points_indicator.copy()
         .loc[(filtered_data_points_indicator["title"] == chart_n) & (filtered_data_points_indicator["level"] == "regional")]
     )
-
-
 
     country_avgs = (
         filtered_data_points_indicator.copy()
@@ -222,15 +214,13 @@ with qrq_vartab:
         .reset_index()
     )
 
-
     eu_avg = (
         filtered_data_points_indicator.copy()
         .loc[(filtered_data_points_indicator["title"] == chart_n) & (filtered_data_points_indicator['level'] == "eu")]
         .reset_index()
     )
 
-
-    if country_focused == True and len(country_select) > 0:
+    if country_focused and len(country_select) > 0:
         mapData = (
             mapData.copy()
             .loc[mapData['country'].isin(country_select)]
@@ -241,7 +231,6 @@ with qrq_vartab:
             .loc[country_avgs['country'].isin(country_select)]
             .reset_index()
         )
-
 
     data4bars = (
         pd.concat([country_avgs, eu_avg], ignore_index=True)
