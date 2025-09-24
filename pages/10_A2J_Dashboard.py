@@ -36,14 +36,9 @@ with open("styles.css") as stl:
 sidemenu.insert_smenu()
 
 if passcheck.check_password():
-# Defining auth secrets (when app is already deployed)
-    # dbtoken  = st.secrets["dbtoken"]
-    # dbkey    = st.secrets["app_key"]
-    # dbsecret = st.secrets["app_secret"]
-
-    dbtoken = "kklGSIYU0ggAAAAAAAAAASj4xcAhbZXVpz5lF4trmmGzro47_KqRkndtuvevuinj"
-    dbkey = "8uhcql0s1vsdy11"
-    dbsecret = "969epxxo3ienljo"
+    dbtoken  = st.secrets["dbtoken"]
+    dbkey    = st.secrets["app_key"]
+    dbsecret = st.secrets["app_secret"]
 
     atoken = passcheck.retrieve_DBtoken(dbkey, dbsecret, dbtoken)
 
